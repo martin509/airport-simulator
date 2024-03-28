@@ -13,7 +13,7 @@ collect input variables from user (using a config file)
 generate flights and store in COMMERCIAL_FLIGHT_DEPARTURE_QUEUE and PROVINCIAL_FLIGHT_DEPARTURE_QUEUE
 generate passengers for each flight scheduled to take place during the simulation and store in COMMERCIAL_PASSENGERS_QUEUE and PROVINCIAL_PASSENGERS_QUEUE queue
 
-loop [until # days simulated met]
+`loop [until # days simulated met]
     //NOTE: checks below must occur in the specified order
     check COMMERCIAL_PASSENGERS_QUEUE (passenger arrival time) -> (add to BUSINESS_CHECKIN_WAITING_QUEUE or COACH_CHECKIN_WAITING_QUEUE)
     check PROVINCIAL_PASSENGERS_QUEUE (passenger arrival time) -> (add to BUSINESS_CHECKIN_WAITING_QUEUE or COACH_CHECKIN_WAITING_QUEUE)
@@ -42,7 +42,7 @@ generating passengers:
   - generate random variates for if they have bags
   - generate random variates for `#` of bags
 
--- CODE ENDS HERE --
+-- CODE ENDS HERE --`
 
 
 
