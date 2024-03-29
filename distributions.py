@@ -5,7 +5,10 @@ class Distribution:
         self.start = start
         self.end = end
     def genNumber(self):
-        return 2
+        pass
+        
+    def genInt(self):
+        return int(genNumber(self))
         
 class DistUniform(Distribution):
     def __init__(self, start, end):

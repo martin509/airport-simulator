@@ -13,12 +13,12 @@ def genericEvent(event):
 
 def main():
     checkinQueues = checkin.createCheckinQueues(1,0,0)
-    globalQueue = scheduler.GlobalEventQueue()
     
     print("set maximum runtime:")
     scheduler.GlobalEventQueue.MAXTIME = int(input())
     print("set maximum number of commuters:")
     passenger.Passenger.MAXPASSENGERCOUNT = int(input())
+    
     """
     event1 = scheduler.GlobalEvent(2, genericEvent, 1) # sequence: ABAB or ABBA
     event1.addArgs([event1])
@@ -35,11 +35,9 @@ def main():
     globalQueue.addEvent(event4)
     """
     
-    passenger.generateCommuter(globalQueue)
+    passenger.generateCommuter()
     
-    
-    
-    globalQueue.executeEventQueue()
+    scheduler.globalQueue.executeEventQueue()
    
         
     

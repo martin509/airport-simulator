@@ -1,4 +1,3 @@
-import scheduler
 from collections import deque
 
 DEBUG = 0
@@ -35,6 +34,9 @@ class GlobalEventQueue:
     All arrivals, departures, etc in all aspects of the application go here.
     """
     MAXTIME = 32
+    
+    
+    
     def __init__(self):
         self.queue = deque()
         self.time = 0
@@ -105,4 +107,7 @@ class GlobalEventQueue:
                 event.func(*event.args)
             #print(len(globalQueue.queue))
             eventlist = self.popNextEvents()
-        
+            
+globalQueue = GlobalEventQueue()
+    
+          
