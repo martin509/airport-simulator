@@ -2,6 +2,7 @@ import distributions
 import scheduler
 import checkin
 import passenger
+import plane
 
 DEBUG = 0
 
@@ -12,12 +13,17 @@ def genericEvent(event):
 
 
 def main():
-    checkinQueues = checkin.createCheckinQueues(1,0,0)
+    # checkinQueues = checkin.createCheckinQueues(1,0,0)
     
     print("set maximum runtime:")
     scheduler.GlobalEventQueue.MAXTIME = int(input())
     print("set maximum number of commuters:")
     passenger.Passenger.MAXPASSENGERCOUNT = int(input())
+    
+    print("set number of universal servers:")
+    nServers = int(input())
+    
+    checkin.setupCheckin(1,0,0, nServers,0,0)
     
     """
     event1 = scheduler.GlobalEvent(2, genericEvent, 1) # sequence: ABAB or ABBA
@@ -34,6 +40,8 @@ def main():
     globalQueue.addEvent(event3)
     globalQueue.addEvent(event4)
     """
+    plane.ProvincialFlight()
+    scheduler.globalQueue.addEventFromFunc(30, plane.CommuterFlight, 2, [])
     
     passenger.generateCommuter()
     

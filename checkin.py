@@ -3,11 +3,17 @@ import distributions
 import scheduler
 
 securityQueue = 0
+terminal = list()
 checkinQueues = 0
 checkinServerList = 0
 
+
+def sendPassengerToTerminal(passenger):
+    terminal.append(passenger)
+
 def sendPassengerToSecurity(passenger):
     print(scheduler.globalQueue.time, ": sent passenger [", passenger, "] to security" )
+    sendPassengerToTerminal(passenger)
 
 class PassengerQueue(deque):
     # acceptable queueTypes: 0 (universal), 1 (coach), 2 (business)
@@ -23,11 +29,17 @@ class Server:
     def __init__(self, passengerType):
         # acceptable passengerTypes: 0, 1, 2
         self.passengerType = passengerType
-        self.checkinDistribution = distributions.DistUniform(0.25,2)
+        self.checkinDist1 = distributions.DistExponential(2)
+        self.checkinDist2 = distributions.DistExponential(1)
+        self.checkinDist3 = distributions.DistExponential(3)
         self.isBusy = 0
         
     def getPassengerProcessTime(self, passenger):
-        return self.checkinDistribution.genNumber()
+        time = self.checkinDist1.genNumber()
+        for n in range(passenger.bagCount):
+            time += self.checkinDist2.genNumber()
+        time += self.checkinDist3.genNumber()
+        return time
         
     def selectPassenger(self):
         for queue in checkinQueues:
@@ -80,9 +92,14 @@ def createServers(nUniversal, nCoach, nBusiness):
         serverList.append(s)
     return serverList
     
-securityQueue = PassengerQueue(0)
-checkinQueues = createCheckinQueues(1,0,0)
-checkinServerList = createServers(2,0,0)
+def setupCheckin(hasUniversal, hasCoach, hasBusiness, nUniversal, nCoach, nBusiness):
+
+    global securityQueue
+    securityQueue = PassengerQueue(0)
+    global checkinQueues
+    checkinQueues = createCheckinQueues(hasUniversal, hasCoach, hasBusiness)
+    global checkinServerList
+    checkinServerList = createServers(nUniversal, nCoach, nBusiness)
     
 
 
