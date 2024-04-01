@@ -19,11 +19,24 @@ def main():
     scheduler.GlobalEventQueue.MAXTIME = int(input())
     print("set maximum number of commuters:")
     passenger.Passenger.MAXPASSENGERCOUNT = int(input())
-    
-    print("set number of universal servers:")
-    nServers = int(input())
-    
-    checkin.setupCheckin(1,0,0, nServers,0,0)
+    print("use default checkin desk options? Y/N:")
+    usedefault = input()
+    if usedefault == "Y":
+        checkin.setupCheckin([0,1,1], [0, 1, 1], [0,3,1], [0,2,1])
+    else:
+        print("set number of universal checkin desks:")
+        nUniversal = int(input())
+        print("set number of coach checkin desks:")
+        nCoach = int(input())
+        print("set number of business checkin desks:")
+        nBusiness = int(input())
+        print("set number of universal security machines:")
+        nUniSec = int(input())
+        print("set number of coach security machines:")
+        nCoachSec = int(input())
+        print("set number of business security machines:")
+        nBusiSec = int(input())
+        checkin.setupCheckin([0,1,1], [0, 1, 1], [nUniversal,nCoach,nBusiness], [nUniSec, nCoachSec, nBusiSec])
     
     """
     event1 = scheduler.GlobalEvent(2, genericEvent, 1) # sequence: ABAB or ABBA

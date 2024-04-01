@@ -22,9 +22,9 @@ class DistUniform(Distribution):
 class DistExponential(Distribution):
     def __init__(self, average):
         Distribution.__init__(self)
-        self.lambdaVal = 1/average
+        self.lambdaVal = 1/float(average)
     def genNumber(self):
-        return (math.log( 1- (float(random.randrange(10000))/10000)))/(self.lambdaVal*-1)
+        return math.log( 1- (float(random.randrange(10000))/10000))/(self.lambdaVal*-1)
         
 class DistBernoulli(Distribution):
     def __init__(self, failureChance):
@@ -67,7 +67,7 @@ class DistNormal(Distribution):
     def __init__(self, mean, variance):
         Distribution.__init__(self)
         self.mean = mean
-        self.variance = variance
+        self.stdev = math.sqrt(float(variance))
         
     def genNumber(self):
-        return random.normalvariate(self.mean, self.variance)
+        return random.normalvariate(self.mean, self.stdev)

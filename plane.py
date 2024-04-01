@@ -6,7 +6,7 @@ import checkin
 class Flight:
     def __init__(self, delay):
         self.flightDelay = delay
-        self.scheduledTime = scheduler.globalQueue.time + delay
+        self.departureTime = scheduler.globalQueue.time + delay
         scheduler.globalQueue.addEventFromFunc(delay, self.takeOff, 2, list())
         
     def takeOff(self):
@@ -25,16 +25,15 @@ class CommuterFlight(Flight):
         self.flightNumber = CommuterFlight.flightCount
         
     def __str__(self):
-        return f'Commuter flight #{self.flightNumber} scheduled for {self.scheduledTime}'
+        return f'Commuter flight #{self.flightNumber} scheduled for {self.departureTime}'
         
     def takeOff(self):
         passengers = list()
-        
-        for passenger in checkin.terminal:
-            if passenger.passengerType == "COMMUTER" and len(passengers) < self.totalSeats:
-                passengers.append(passenger)
-                checkin.terminal.remove(passenger)
-        print(scheduler.globalQueue.time, ": commuter flight", self, "taking off with", len(passengers), "passengers")
+        print("commuter terminal length:",  len(checkin.commuterTerminal))
+        while len(passengers) < self.totalSeats and len(checkin.commuterTerminal) > 0:
+            passenger = checkin.commuterTerminal.popleft()
+            passengers.append(passenger)
+        print(scheduler.globalQueue.time, ":", self, "taking off with", len(passengers), "passengers")
         CommuterFlight()
         
         
@@ -54,19 +53,19 @@ class ProvincialFlight(Flight):
         self.generatePassengers()
 
     def __str__(self):
-        return f'Provincial flight #{self.flightNumber} scheduled for {self.scheduledTime}'
+        return f'Provincial flight #{self.flightNumber} scheduled for {self.departureTime}'
         
     def generatePassengers(self):
-        nCoach = distributions.DistBinomial(self.coachSeats, 0.85).genInt()
-        nBusiness = distributions.DistBinomial(self.businessSeats, 0.75).genInt()
+        self.nCoach = distributions.DistBinomial(self.coachSeats, 0.85).genInt()
+        self.nBusiness = distributions.DistBinomial(self.businessSeats, 0.75).genInt()
         arrivalDist = distributions.DistNormal(75,50)
         
         # arrival times: assume that provincial flights are generated 6 hours ahead of time
-        for n in range(nCoach):
+        for n in range(self.nCoach):
             arrivalTime = self.flightDelay - arrivalDist.genNumber()
             scheduler.globalQueue.addEventFromFunc(arrivalTime, passenger.generateProvincial, 2, [self, 1])
             # scheduler.globalQueue.addEventFromFunc(arrivalTime, generateCommuter, 2, list())
-        for n in range(nBusiness):
+        for n in range(self.nBusiness):
             arrivalTime = self.flightDelay - arrivalDist.genNumber()
             scheduler.globalQueue.addEventFromFunc(arrivalTime, passenger.generateProvincial, 2, [self, 2])
             
@@ -74,15 +73,19 @@ class ProvincialFlight(Flight):
         coachPassengers = list()
         businessPassengers = list()
         
-        for passenger in checkin.terminal:
+        
+        
+        for passenger in checkin.provincialTerminal:
             if passenger.passengerType == "PROVINCIAL" and passenger.flight == self:
                 if passenger.passengerClass == 1:
                     coachPassengers.append(passenger)
-                    checkin.terminal.remove(passenger)
+                    checkin.provincialTerminal.remove(passenger)
                 else:
                     businessPassengers.append(passenger)
-                    checkin.terminal.remove(passenger)
-        print(scheduler.globalQueue.time, ": provincial flight", self, "taking off with", len(coachPassengers), "coach passengers and", len(businessPassengers), "business passengers")
+                    checkin.provincialTerminal.remove(passenger)
+        print(scheduler.globalQueue.time, ":", self, "taking off with", len(coachPassengers), "/", self.nCoach,"coach passengers and", len(businessPassengers),"/", self.nBusiness, "business passengers")
+        profit = 1000*len(businessPassengers) + 500*len(coachPassengers) - 12000
+        print("\tprofit:", profit)
         ProvincialFlight()
             
         
