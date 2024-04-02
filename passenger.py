@@ -162,7 +162,7 @@ class ProvincialPassenger(Passenger):
     def hasMissedFlight(self):
         if scheduler.globalQueue.time > self.flight.departureTime:
             print(scheduler.globalQueue.time, ": ", self, "has missed their flight!")
-            if (scheduler.globalQueue.time - self.creationTime) >= 90:
+            if (self.expectedDepartureTime - (self.creationTime+self.arrivalTime)) >= 90:
                 print(scheduler.globalQueue.time, ": ", self, "qualifies for a ticket refund!")
                 if self.passengerClass == 1:
                     ProvincialPassenger.coachRefundCount += 1

@@ -19,20 +19,12 @@ def sendPassengerToTerminal(passenger):
     if passenger.passengerType == "PROVINCIAL":
         if (not passenger.hasMissedFlight()):
             provincialTerminal.append(passenger)
-        else:
-            if(settings.logPassengerInfo):
-                print(scheduler.globalQueue.time, ": ", passenger, "has missed their flight!")
     else:
         commuterTerminal.append(passenger)
 
 def sendPassengerToSecurity(passenger):
     if(settings.logPassengerInfo):
         print(scheduler.globalQueue.time, ": sent passenger [", passenger, "] to security" )
-    if passenger.passengerType == "PROVINCIAL":
-        if passenger.hasMissedFlight():
-            if(settings.logPassengerInfo):
-                print(scheduler.globalQueue.time, ": ", passenger, "has missed their flight!")
-            return;
     passenger.securityEnterTime = scheduler.globalQueue.time
     passenger.findQueue(securityQueues, securityServerList)
 
@@ -122,7 +114,7 @@ class Server:
         passenger = queue.popleft()
 
         # if passenger has missed their flight send them home TODO double check if this works
-        if(passenger.passengerType == "PROVINCIAL" and passenger.expectedDepartureTime < scheduler.globalQueue.time):
+        if(passenger.passengerType == "PROVINCIAL" and passenger.hasMissedFlight()):
             if(settings.logPassengerInfo):
                 print(scheduler.globalQueue.time, "MISSED FLIGHT : passenger: [", passenger, "] missed flight in checkin line")
             scheduler.globalQueue.addEventFromFunc(0, self.selectPassenger, 1, [])
@@ -172,7 +164,7 @@ class SecurityServer(Server):
         passenger = queue.popleft()
 
         # if passenger has missed their flight send them home TODO double check if this works
-        if(passenger.passengerType == "PROVINCIAL" and passenger.expectedDepartureTime < scheduler.globalQueue.time):
+        if(passenger.passengerType == "PROVINCIAL" and passenger.hasMissedFlight()):
             if(settings.logPassengerInfo):
                 print(scheduler.globalQueue.time, "MISSED FLIGHT : passenger: [", passenger, "] missed flight in security line")
             scheduler.globalQueue.addEventFromFunc(0, self.selectPassenger, 1, [])
