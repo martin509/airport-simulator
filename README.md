@@ -2,6 +2,7 @@
 We assume that flights begin departing at midnight (time 00:00) on first day of simulation and end at midnight (time 24:00) on last day of simulation
 We assume that demand is constant for all times during the day
 We assume that provincial passengers that miss their flight will still go to the checkin or security counter -> they will have a 0s processing time and are told to leave as they have missed their flight
+We assume that seat demand is independant to the number of seats available (whether we offer 40 seats or 140 seats, the probability of filling a seat doesnt change)
 
 pseudocode:
 

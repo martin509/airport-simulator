@@ -1,6 +1,7 @@
 import scheduler
 import distributions
 import checkin
+import settings
 
 commuterGenerator = distributions.DistExponential(1.5)
 
@@ -81,7 +82,8 @@ class Passenger:
     
     def enterQueue(self, queue, servers):
         queue.append(self)
-        print(scheduler.globalQueue.time, ": passenger", self, "entered queue of length ", len(queue))
+        if(settings.logPassengerInfo):
+            print(scheduler.globalQueue.time, ": passenger", self, "entered queue of length ", len(queue))
         for server in servers:
             if server.isBusy == 0 and (server.passengerType == self.passengerClass or server.passengerType == 0):
                 server.selectPassenger()
@@ -175,7 +177,8 @@ def generateCommuter():
     arrivalTime = commuterGenerator.genNumber()
     newPassenger.creationTime = scheduler.globalQueue.time
     newPassenger.arrivalTime = arrivalTime
-    print(scheduler.globalQueue.time, ": Commuter arrived:", newPassenger, "next arrival time:", arrivalTime)
+    if(settings.logPassengerInfo):
+        print(scheduler.globalQueue.time, ": Commuter arrived:", newPassenger, "next arrival time:", arrivalTime)
     newPassenger.findQueue(checkin.checkinQueues, checkin.checkinServerList)
     if(Passenger.PASSENGERSGENERATED < Passenger.MAXPASSENGERCOUNT or Passenger.MAXPASSENGERCOUNT == -1):
         scheduler.globalQueue.addEventFromFunc(arrivalTime, generateCommuter, 2, list())
@@ -183,7 +186,8 @@ def generateCommuter():
 def generateProvincial(passengerClass, flight):
     newPassenger = ProvincialPassenger(passengerClass, flight)
     passengerList.append(newPassenger);
-    print(scheduler.globalQueue.time, ": PROVINCIAL arrived:", newPassenger)
+    if(settings.logPassengerInfo):
+        print(scheduler.globalQueue.time, ": PROVINCIAL arrived:", newPassenger)
     newPassenger.findQueue(checkin.checkinQueues, checkin.checkinServerList)
     
 def endSimStats():

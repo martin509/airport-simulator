@@ -4,6 +4,7 @@ import checkin
 import passenger
 import plane
 import csv
+import settings
 
 DEBUG = 0
 
@@ -24,7 +25,7 @@ def main():
     # generate commuter flight passengers for the duration of the simulation
     passenger.generateCommuter()
     # generate commuter flight departure events for the duration of the simulation
-    scheduler.globalQueue.addEventFromFunc(30, plane.CommuterFlight, 2, [])
+    scheduler.globalQueue.addEventFromFunc(-30, plane.CommuterFlight, 2, []) #I changed this to -30 so the first flight is at 00:30am day 1
     
     # run through simulation by handling events in the event queue
     scheduler.globalQueue.executeEventQueue()
@@ -59,14 +60,36 @@ def getSimulationParametersFromUser():
         nCoach = int(input())
         print("Set number of business checkin desks:")
         nBusiness = int(input())
-        print("Set number of universal security machines:")
-        nUniSec = int(input())
-        print("Set number of coach security machines:")
-        nCoachSec = int(input())
-        print("Set number of business security machines:")
-        nBusiSec = int(input())
-        
-        checkin.setupCheckin([0,1,1], [0, 1, 1], [nUniversal,nCoach,nBusiness], [nUniSec, nCoachSec, nBusiSec])
+        # print("set number of universal security machines:")
+        # nUniSec = int(input())
+        # print("set number of coach security machines:")
+        # nCoachSec = int(input())
+        # print("set number of business security machines:") # TODO remove security customization
+        # nBusiSec = int(input())
+        checkin.setupCheckin([0,1,1], [0, 1, 1], [nUniversal,nCoach,nBusiness], [0,2,1])
+
+    settings.init()
+    print("Log all event actions?")
+    logthis = input()
+    if logthis == "Y":
+        settings.logQueueInfo = True
+        settings.logPlaneInfo = True
+        settings.logPassengerInfo = True
+    else:
+        print("Log queue event actions?")
+        logthis = input()
+        if logthis == "Y":
+            settings.logQueueInfo = True
+        print("Log plane event actions?")
+        logthis = input()
+        if logthis == "Y":
+            settings.logPlaneInfo = True
+        print("Log passenger event actions?")
+        logthis = input()
+        if logthis == "Y":
+            settings.logPassengerInfo = True
+
+    print(f'log configuration {settings.logQueueInfo} {settings.logPlaneInfo} {settings.logPassengerInfo}')
         
     #print("set maximum number of commuters:")
     passenger.Passenger.MAXPASSENGERCOUNT = -1 #int(input()) TODO

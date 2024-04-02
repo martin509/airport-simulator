@@ -2,6 +2,7 @@ import scheduler
 import passenger
 import distributions
 import checkin
+import settings
 
 class Flight:
     def __init__(self, delay):
@@ -10,7 +11,8 @@ class Flight:
         scheduler.globalQueue.addEventFromFunc(delay, self.takeOff, 2, list())
         
     def takeOff(self):
-        print(scheduler.globalQueue.time, ": flight", self, "taking off")
+        if(settings.logPlaneInfo):
+            print(scheduler.globalQueue.time, ": flight", self, "taking off")
         
 class CommuterFlight(Flight):
     flightCount = 0
@@ -30,13 +32,15 @@ class CommuterFlight(Flight):
         
     def takeOff(self):
         passengers = list()
-        # print("commuter terminal length:",  len(checkin.commuterTerminal))
+        # if(settings.logPlaneInfo):
+        #     print("commuter terminal length:",  len(checkin.commuterTerminal))
         while len(passengers) < self.totalSeats and len(checkin.commuterTerminal) > 0:
             passenger = checkin.commuterTerminal.popleft()
             passenger.flightNum = self.flightNumber
             passengers.append(passenger)
             passenger.departureTime = self.departureTime
-        print(scheduler.globalQueue.time, ":", self, "taking off with", len(passengers), "passengers")
+        if(settings.logPlaneInfo):
+            print(scheduler.globalQueue.time, ":", self, "taking off with", len(passengers), "passengers")
         profit = 200 * len(passengers) - 1500
         print("\tprofit:", profit)
         CommuterFlight.totalFlightProfit += profit
@@ -90,9 +94,11 @@ class ProvincialFlight(Flight):
                 else:
                     businessPassengers.append(passenger)
                     checkin.provincialTerminal.remove(passenger)
-        print(scheduler.globalQueue.time, ":", self, "taking off with", len(coachPassengers), "/", self.nCoach,"coach passengers and", len(businessPassengers),"/", self.nBusiness, "business passengers")
+        if(settings.logPlaneInfo):
+            print(scheduler.globalQueue.time, ":", self, "taking off with", len(coachPassengers), "/", self.nCoach,"coach passengers and", len(businessPassengers),"/", self.nBusiness, "business passengers")
         profit = 1000*len(businessPassengers) + 500*len(coachPassengers) - 12000
-        print("\tprofit:", profit)
+        if(settings.logPlaneInfo):
+            print("\tprofit:", profit)
         ProvincialFlight.totalFlightProfit += profit
         ProvincialFlight()
 
