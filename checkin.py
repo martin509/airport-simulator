@@ -23,6 +23,10 @@ def sendPassengerToTerminal(passenger):
 
 def sendPassengerToSecurity(passenger):
     print(scheduler.globalQueue.time, ": sent passenger [", passenger, "] to security" )
+    if passenger.passengerType == "PROVINCIAL":
+        if passenger.hasMissedFlight():
+            print(scheduler.globalQueue.time, ": ", passenger, "has missed their flight!")
+            return;
     passenger.findQueue(securityQueues, securityServerList)
 
 class PassengerQueue(deque):
@@ -100,10 +104,11 @@ class Server:
             print(scheduler.globalQueue.time, ":", self, "is no longer idle.")
         passenger = queue.popleft()
 
-        #if passenger has missed their flight send them home TODO double check if this works
-        # if(passenger.passengerType == "PROVINCIAL" and passenger.expectedDepartureTime > scheduler.globalQueue.time):
-        #     print(scheduler.globalQueue.time, "MISSED FLIGHT : passenger: [", passenger, "] missed flight in checkin line")
-        #     return
+        # if passenger has missed their flight send them home TODO double check if this works
+        if(passenger.passengerType == "PROVINCIAL" and passenger.expectedDepartureTime < scheduler.globalQueue.time):
+            print(scheduler.globalQueue.time, "MISSED FLIGHT : passenger: [", passenger, "] missed flight in checkin line")
+            scheduler.globalQueue.addEventFromFunc(0, self.selectPassenger, 1, [])
+            return
 
         checkinTime = self.getPassengerProcessTime(passenger)
         print(scheduler.globalQueue.time, ": checking in passenger: [", passenger, "] checkin time:", checkinTime)
@@ -144,10 +149,11 @@ class SecurityServer(Server):
             print(scheduler.globalQueue.time, ":", self, "is no longer idle.")
         passenger = queue.popleft()
 
-        #if passenger has missed their flight send them home TODO double check if this works
-        # if(passenger.passengerType == "PROVINCIAL" and passenger.expectedDepartureTime > scheduler.globalQueue.time):
-        #     print(getReadableTime(scheduler.globalQueue.time), "MISSED FLIGHT : passenger: [", passenger, "] missed flight in security line")
-        #     return
+        # if passenger has missed their flight send them home TODO double check if this works
+        if(passenger.passengerType == "PROVINCIAL" and passenger.expectedDepartureTime < scheduler.globalQueue.time):
+            print(scheduler.globalQueue.time, "MISSED FLIGHT : passenger: [", passenger, "] missed flight in security line")
+            scheduler.globalQueue.addEventFromFunc(0, self.selectPassenger, 1, [])
+            return
 
         checkinTime = self.getPassengerProcessTime(passenger)
         print(scheduler.globalQueue.time, ": processing passenger: [", passenger, "] security check time:", checkinTime)
