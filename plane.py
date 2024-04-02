@@ -42,7 +42,8 @@ class CommuterFlight(Flight):
         if(settings.logPlaneInfo):
             print(scheduler.globalQueue.time, ":", self, "taking off with", len(passengers), "passengers")
         profit = 200 * len(passengers) - 1500
-        print("\tprofit:", profit)
+        if(settings.logPlaneInfo):
+            print("\tprofit:", profit)
         CommuterFlight.totalFlightProfit += profit
         CommuterFlight()
         

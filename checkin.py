@@ -99,7 +99,8 @@ class Server:
         else:
             self.updateUtilization()
             self.isBusy = 0
-            print(scheduler.globalQueue.time, ":", self, "is idle!")
+            if(settings.logQueueInfo):
+                print(scheduler.globalQueue.time, ":", self, "is idle!")
         
     def updateUtilization(self):
         totalTime = scheduler.globalQueue.time - self.lastUpdate
@@ -116,7 +117,8 @@ class Server:
         if self.isBusy == 0:
             self.updateUtilization()
             self.isBusy = 1
-            print(scheduler.globalQueue.time, ":", self, "is no longer idle.")
+            if(settings.logQueueInfo):
+                print(scheduler.globalQueue.time, ":", self, "is no longer idle.")
         passenger = queue.popleft()
 
         # if passenger has missed their flight send them home TODO double check if this works
@@ -128,7 +130,8 @@ class Server:
 
         passenger.checkinLeaveTime = scheduler.globalQueue.time
         checkinTime = self.getPassengerProcessTime(passenger)
-        print(scheduler.globalQueue.time, ": checking in passenger: [", passenger, "] checkin time:", checkinTime)
+        if(settings.logQueueInfo):
+            print(scheduler.globalQueue.time, ": checking in passenger: [", passenger, "] checkin time:", checkinTime)
         passenger.checkinTime = checkinTime
         passenger.checkinStartTime = scheduler.globalQueue.time
 
@@ -164,7 +167,8 @@ class SecurityServer(Server):
         if self.isBusy == 0:
             self.updateUtilization()
             self.isBusy = 1
-            print(scheduler.globalQueue.time, ":", self, "is no longer idle.")
+            if(settings.logQueueInfo):
+                print(scheduler.globalQueue.time, ":", self, "is no longer idle.")
         passenger = queue.popleft()
 
         # if passenger has missed their flight send them home TODO double check if this works
@@ -176,7 +180,8 @@ class SecurityServer(Server):
 
         passenger.securityLeaveTime = scheduler.globalQueue.time
         checkinTime = self.getPassengerProcessTime(passenger)
-        print(scheduler.globalQueue.time, ": processing passenger: [", passenger, "] security check time:", checkinTime)
+        if(settings.logQueueInfo):
+            print(scheduler.globalQueue.time, ": processing passenger: [", passenger, "] security check time:", checkinTime)
         passenger.securityStartTime = scheduler.globalQueue.time
         passenger.securityTime = checkinTime
             
