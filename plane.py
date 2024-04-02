@@ -32,7 +32,9 @@ class CommuterFlight(Flight):
         print("commuter terminal length:",  len(checkin.commuterTerminal))
         while len(passengers) < self.totalSeats and len(checkin.commuterTerminal) > 0:
             passenger = checkin.commuterTerminal.popleft()
+            passenger.flightNum = self.flightNumber
             passengers.append(passenger)
+            passenger.departureTime = self.departureTime
         print(scheduler.globalQueue.time, ":", self, "taking off with", len(passengers), "passengers")
         CommuterFlight()
         

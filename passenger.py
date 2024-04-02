@@ -5,6 +5,8 @@ import checkin
 commuterGenerator = distributions.DistExponential(1.5)
 
 
+passengerList = list()
+
 class Passenger:
     MAXPASSENGERCOUNT = -1
     PASSENGERSGENERATED = 0
@@ -13,8 +15,18 @@ class Passenger:
         #possible customer types: "COMMUTER", "PROVINCIAL"
         #possible customer classes: 1 (coach), 2 (business)
         self.creationTime = scheduler.globalQueue.time
+        self.arrivalTime = -1
+        
         self.passengerType = passengerType
         self.passengerClass = passengerClass
+        self.expectedDepartureTime = -1
+
+        self.departureTime = -1
+        self.checkinTime = -1
+        self.securityTime = -1
+        self.checkinStartTime = -1
+        self.securityStartTime = -1
+        self.flightNum = -1;
         
         Passenger.PASSENGERSGENERATED += 1
         self.passengerNumber = Passenger.PASSENGERSGENERATED
@@ -61,11 +73,43 @@ class Passenger:
             if server.isBusy == 0 and (server.passengerType == self.passengerClass or server.passengerType == 0):
                 server.selectPassenger()
                 break
+    
+    def printFull(self):
+        a1 = self.passengerNumber                             #passenger id
+        a2 = self.passengerType                               #commuter or provincial
+        a3 = ("BUSINESS", "COACH") [self.passengerClass == 1] #coach or business
+        a4 = self.bagCount                                    #bag count
+        a5 = self.flightNum                                        #flight on if commuter or scheduled flight if provincial
+        a6 = self.creationTime                                #creation time
+        a7 = self.arrivalTime                                 #arrival time
+        a8 = self.checkinStartTime                            #checkin waiting time
+        a9 = self.checkinTime                                 #checkin time
+        a10 = self.securityStartTime                          #security waiting time
+        a11 = self.securityTime                               #security time
+        a12 = self.departureTime                              #departure time
+        a13 = self.expectedDepartureTime
+            
+        return f'{a1}, {a2}, {a3}, {a4}, {a5}, {a6}, {a7}, {a8}, {a9}, {a10}, {a11}, {a12}, {a13}'
+        
+    def printMin(self):
+        if(self.passengerType == "PROVINCIAL"):
+            flightType = "P"
+        else:
+            flightType = "C"
+        if(self.passengerClass == 1):
+            passType = "C"
+        else:
+            passType = "B"
+        
+        return f'P#{self.passengerNumber} ({flightType}{passType})'
+
         
 class ProvincialPassenger(Passenger):
     def __init__(self, flight, passengerClass):
         Passenger.__init__(self, "PROVINCIAL", passengerClass )
         self.flight = flight
+        self.expectedDepartureTime = flight.departureTime
+        self.flightNum = self.flight.flightNumber
         
     def __str__(self):
         if self.passengerClass == 1:
@@ -84,7 +128,10 @@ class ProvincialPassenger(Passenger):
          
 def generateCommuter():
     newPassenger = Passenger("COMMUTER", 1)
+    passengerList.append(newPassenger);
     arrivalTime = commuterGenerator.genNumber()
+    newPassenger.creationTime = scheduler.globalQueue.time
+    newPassenger.arrivalTime = scheduler.globalQueue.time + arrivalTime
     print(scheduler.globalQueue.time, ": Commuter arrived:", newPassenger, "next arrival time:", arrivalTime)
     newPassenger.findQueue(checkin.checkinQueues, checkin.checkinServerList)
     if(Passenger.PASSENGERSGENERATED < Passenger.MAXPASSENGERCOUNT or Passenger.MAXPASSENGERCOUNT == -1):
@@ -92,6 +139,7 @@ def generateCommuter():
         
 def generateProvincial(passengerClass, flight):
     newPassenger = ProvincialPassenger(passengerClass, flight)
+    passengerList.append(newPassenger);
     print(scheduler.globalQueue.time, ": PROVINCIAL arrived:", newPassenger)
     newPassenger.findQueue(checkin.checkinQueues, checkin.checkinServerList)
     
