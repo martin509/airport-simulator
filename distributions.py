@@ -22,11 +22,12 @@ class DistUniform(Distribution):
 class DistExponential(Distribution):
     def __init__(self, average):
         Distribution.__init__(self)
-        self.lambdaVal = 1/float(average)
+        self.lambdaVal = 1.0/float(average)
     def genNumber(self):
         return math.log( 1- (float(random.randrange(10000))/10000))/(self.lambdaVal*-1)
         
 class DistBernoulli(Distribution):
+    #technically this is the geometric distribution
     def __init__(self, failureChance):
         # chance: float from 0-1
         Distribution.__init__(self)
@@ -64,6 +65,7 @@ class DistBinomial(Distribution):
         return n
         
 class DistNormal(Distribution):
+    #has to rely on python's normal distribution function since you can't do a variate neatly
     def __init__(self, mean, variance):
         Distribution.__init__(self)
         self.mean = mean

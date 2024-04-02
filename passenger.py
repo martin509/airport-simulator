@@ -10,6 +10,13 @@ passengerList = list()
 class Passenger:
     MAXPASSENGERCOUNT = -1
     PASSENGERSGENERATED = 0
+    BusinessCount = 0
+    
+    totalCheckinTime = 0
+    totalSecurityTime = 0
+    
+    totalBusinessCheckinTime = 0
+    totalBusinessSecurityTime = 0
     
     def __init__(self, passengerType, passengerClass):
         #possible customer types: "COMMUTER", "PROVINCIAL"
@@ -24,12 +31,18 @@ class Passenger:
         self.departureTime = -1
         self.checkinTime = -1
         self.securityTime = -1
-        self.checkinStartTime = -1
-        self.securityStartTime = -1
         self.flightNum = -1;
         
         Passenger.PASSENGERSGENERATED += 1
         self.passengerNumber = Passenger.PASSENGERSGENERATED
+        if self.passengerClass == 2:
+            Passenger.BusinessCount += 1
+        
+        self.checkinEnterTime = scheduler.globalQueue.time
+        self.checkinLeaveTime = 0
+        
+        self.securityEnterTime = 0
+        self.securityLeaveTime = 0
         
         if(passengerType == "COMMUTER"): 
             self.bagCount = distributions.DistBernoulli(0.6).genNumber()
@@ -74,6 +87,7 @@ class Passenger:
                 server.selectPassenger()
                 break
     
+
     def printFull(self):
         a1 = self.passengerNumber                             #passenger id
         a2 = self.passengerType                               #commuter or provincial
@@ -82,14 +96,27 @@ class Passenger:
         a5 = self.flightNum                                        #flight on if commuter or scheduled flight if provincial
         a6 = self.creationTime                                #creation time
         a7 = self.arrivalTime                                 #arrival time
-        a8 = self.checkinStartTime                            #checkin waiting time
-        a9 = self.checkinTime                                 #checkin time
-        a10 = self.securityStartTime                          #security waiting time
+        
+        #checkin waiting time
+        a8 = -1
+        if self.checkinLeaveTime > 0:
+            a8 = self.checkinLeaveTime - self.checkinEnterTime    
+        else:
+            a8 = scheduler.globalQueue.time
+        #checkin time
+        a9 = self.checkinTime                                 
+        
+        #security waiting time
+        a10 = -1
+        if self.securityLeaveTime > 0:
+            a10 = self.securityLeaveTime - self.securityEnterTime 
+        else:
+            a10 = scheduler.globalQueue.time
         a11 = self.securityTime                               #security time
         a12 = self.departureTime                              #departure time
-        a13 = self.expectedDepartureTime
+        # a13 = self.expectedDepartureTime
             
-        return f'{a1}, {a2}, {a3}, {a4}, {a5}, {a6}, {a7}, {a8}, {a9}, {a10}, {a11}, {a12}, {a13}'
+        return [a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12]
         
     def printMin(self):
         if(self.passengerType == "PROVINCIAL"):
@@ -103,12 +130,20 @@ class Passenger:
         
         return f'P#{self.passengerNumber} ({flightType}{passType})'
 
+    def logStats(self):
+        Passenger.totalCheckinTime += (self.checkinLeaveTime - self.checkinEnterTime)
+        Passenger.totalSecurityTime += (self.securityLeaveTime - self.securityEnterTime)
+        if self.passengerClass == 2:
+            Passenger.totalBusinessCheckinTime += (self.checkinLeaveTime - self.checkinEnterTime)
+            Passenger.totalBusinessSecurityTime += (self.securityLeaveTime - self.securityEnterTime)
         
 class ProvincialPassenger(Passenger):
+    coachRefundCount = 0
+    businessRefundCount = 0
     def __init__(self, flight, passengerClass):
         Passenger.__init__(self, "PROVINCIAL", passengerClass )
         self.flight = flight
-        self.expectedDepartureTime = flight.departureTime
+        self.departureTime = flight.departureTime
         self.flightNum = self.flight.flightNumber
         
     def __str__(self):
@@ -123,7 +158,15 @@ class ProvincialPassenger(Passenger):
             Passenger.findQueue(self, queues, servers)
             
     def hasMissedFlight(self):
-        return scheduler.globalQueue.time > self.flight.departureTime
+        if scheduler.globalQueue.time > self.flight.departureTime:
+            print(scheduler.globalQueue.time, ": ", self, "has missed their flight!")
+            if (scheduler.globalQueue.time - self.creationTime) >= 90:
+                print(scheduler.globalQueue.time, ": ", self, "qualifies for a ticket refund!")
+                if self.passengerClass == 1:
+                    ProvincialPassenger.coachRefundCount += 1
+                else:
+                    ProvincialPassenger.businessRefundCount += 1
+            return 
         
          
 def generateCommuter():
@@ -131,7 +174,7 @@ def generateCommuter():
     passengerList.append(newPassenger);
     arrivalTime = commuterGenerator.genNumber()
     newPassenger.creationTime = scheduler.globalQueue.time
-    newPassenger.arrivalTime = scheduler.globalQueue.time + arrivalTime
+    newPassenger.arrivalTime = arrivalTime
     print(scheduler.globalQueue.time, ": Commuter arrived:", newPassenger, "next arrival time:", arrivalTime)
     newPassenger.findQueue(checkin.checkinQueues, checkin.checkinServerList)
     if(Passenger.PASSENGERSGENERATED < Passenger.MAXPASSENGERCOUNT or Passenger.MAXPASSENGERCOUNT == -1):
@@ -143,4 +186,14 @@ def generateProvincial(passengerClass, flight):
     print(scheduler.globalQueue.time, ": PROVINCIAL arrived:", newPassenger)
     newPassenger.findQueue(checkin.checkinQueues, checkin.checkinServerList)
     
-    
+def endSimStats():
+    print("Average passenger check-in queue time:", Passenger.totalCheckinTime/Passenger.PASSENGERSGENERATED)
+    print("Average passenger security queue time:", Passenger.totalSecurityTime/Passenger.PASSENGERSGENERATED)
+    print("")
+    print("Average business class check-in queue time:", Passenger.totalBusinessCheckinTime/Passenger.BusinessCount)
+    print("Average business class security queue time:", Passenger.totalBusinessSecurityTime/Passenger.BusinessCount)
+    print("")
+    print("Number of refunds:", ProvincialPassenger.coachRefundCount + ProvincialPassenger.businessRefundCount)
+    totalRefund = ProvincialPassenger.coachRefundCount*500 + ProvincialPassenger.businessRefundCount*1000
+    print("Total money refunded: $", totalRefund)
+    return totalRefund

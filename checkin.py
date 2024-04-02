@@ -13,10 +13,9 @@ securityServerList = 0
 
 def sendPassengerToTerminal(passenger):
     print(scheduler.globalQueue.time, ": sent passenger [", passenger, "] to terminal" )
+    passenger.logStats()
     if passenger.passengerType == "PROVINCIAL":
-        if passenger.hasMissedFlight():
-            print(scheduler.globalQueue.time, ": ", passenger, "has missed their flight!")
-        else:
+        if (not passenger.hasMissedFlight()):
             provincialTerminal.append(passenger)
     else:
         commuterTerminal.append(passenger)
@@ -27,6 +26,7 @@ def sendPassengerToSecurity(passenger):
         if passenger.hasMissedFlight():
             print(scheduler.globalQueue.time, ": ", passenger, "has missed their flight!")
             return;
+    passenger.securityEnterTime = scheduler.globalQueue.time
     passenger.findQueue(securityQueues, securityServerList)
 
 class PassengerQueue(deque):
@@ -41,13 +41,19 @@ class PassengerQueue(deque):
         
 class Server:
     serverCount = 0
+    
     def __init__(self, passengerType):
         # acceptable passengerTypes: 0, 1, 2
         self.passengerType = passengerType
+        
         self.checkinDist1 = distributions.DistExponential(2)
         self.checkinDist2 = distributions.DistExponential(1)
         self.checkinDist3 = distributions.DistExponential(3)
+        
         self.isBusy = 0
+        self.totalIdle = 0
+        self.totalActive = 0
+        self.lastUpdate = 0
         
         Server.serverCount += 1
         self.serverNumber = Server.serverCount
@@ -81,25 +87,27 @@ class Server:
                 elif queue.queueType == 0:
                     usableQueues.append(queue)
         if len(usableQueues) > 0:
-            self.processPassenger(usableQueues[0])
+            self.processPassenger(random.choice(usableQueues))
+            # self.processPassenger(usableQueues[0])
         else:
+            self.updateUtilization()
             self.isBusy = 0
             print(scheduler.globalQueue.time, ":", self, "is idle!")
-        """
-        for queue in checkinQueues:
-            if (queue.queueType == self.passengerType or queue.queueType) and len(queue) > 0:
-                self.processPassenger(queue)
-                return
-        for queue in checkinQueues:
-            print("queue of type", queue.queueType, ", length", len(queue))
-            if (queue.queueType == 0) and (len(queue) > 0):
-                self.processPassenger(queue)
-                return
-        """
-       
+        
+    def updateUtilization(self):
+        totalTime = scheduler.globalQueue.time - self.lastUpdate
+        if self.isBusy == 0:
+            self.totalIdle += totalTime
+        else:
+            self.totalActive += totalTime
+        self.lastUpdate = scheduler.globalQueue.time
+        
+    def getUtilization(self):
+        return float(self.totalActive)/(self.totalIdle + self.totalActive)
     
     def processPassenger(self, queue):
         if self.isBusy == 0:
+            self.updateUtilization()
             self.isBusy = 1
             print(scheduler.globalQueue.time, ":", self, "is no longer idle.")
         passenger = queue.popleft()
@@ -110,6 +118,7 @@ class Server:
             scheduler.globalQueue.addEventFromFunc(0, self.selectPassenger, 1, [])
             return
 
+        passenger.checkinLeaveTime = scheduler.globalQueue.time
         checkinTime = self.getPassengerProcessTime(passenger)
         print(scheduler.globalQueue.time, ": checking in passenger: [", passenger, "] checkin time:", checkinTime)
         passenger.checkinTime = checkinTime
@@ -145,6 +154,7 @@ class SecurityServer(Server):
             
     def processPassenger(self, queue):
         if self.isBusy == 0:
+            self.updateUtilization()
             self.isBusy = 1
             print(scheduler.globalQueue.time, ":", self, "is no longer idle.")
         passenger = queue.popleft()
@@ -155,6 +165,7 @@ class SecurityServer(Server):
             scheduler.globalQueue.addEventFromFunc(0, self.selectPassenger, 1, [])
             return
 
+        passenger.securityLeaveTime = scheduler.globalQueue.time
         checkinTime = self.getPassengerProcessTime(passenger)
         print(scheduler.globalQueue.time, ": processing passenger: [", passenger, "] security check time:", checkinTime)
         passenger.securityStartTime = scheduler.globalQueue.time
@@ -223,6 +234,21 @@ def setupCheckin(hasQueues, secQueues, nCheckin, nSecurity):
     checkinServerList = createCheckinServers(nCheckin[0], nCheckin[1], nCheckin[2])
     global securityServerList
     securityServerList = createSecurityMachines(nSecurity[0], nSecurity[1], nSecurity[2])
+    
+def endSimStats():
+    global checkinServerList
+    global securityServerList
+    for server in checkinServerList:
+        server.updateUtilization()
+        print(server, "total utilization:", round(server.getUtilization()*100,2), "%")
+    for server in securityServerList:
+        server.updateUtilization()
+        print(server, "total utilization:", round(server.getUtilization()*100,2), "%")
+    serverPay = len(checkinServerList) * 35 * (float(scheduler.globalQueue.time)/60)
+    serverPay = round(serverPay, 2)
+    print("Total amount paid to checkin agents: $", serverPay)
+    return serverPay
+    
     
 
 

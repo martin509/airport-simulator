@@ -15,6 +15,7 @@ class Flight:
 class CommuterFlight(Flight):
     flightCount = 0
     flightInterval = 60
+    totalFlightProfit = 0
     
     def __init__(self):
         Flight.__init__(self, CommuterFlight.flightInterval)
@@ -29,19 +30,23 @@ class CommuterFlight(Flight):
         
     def takeOff(self):
         passengers = list()
-        print("commuter terminal length:",  len(checkin.commuterTerminal))
+        # print("commuter terminal length:",  len(checkin.commuterTerminal))
         while len(passengers) < self.totalSeats and len(checkin.commuterTerminal) > 0:
             passenger = checkin.commuterTerminal.popleft()
             passenger.flightNum = self.flightNumber
             passengers.append(passenger)
             passenger.departureTime = self.departureTime
         print(scheduler.globalQueue.time, ":", self, "taking off with", len(passengers), "passengers")
+        profit = 200 * len(passengers) - 1500
+        print("\tprofit:", profit)
+        CommuterFlight.totalFlightProfit += profit
         CommuterFlight()
         
         
 class ProvincialFlight(Flight):
     flightCount = 0
     flightInterval = 360
+    totalFlightProfit = 0
     
     def __init__(self):
         Flight.__init__(self, ProvincialFlight.flightInterval)
@@ -88,6 +93,13 @@ class ProvincialFlight(Flight):
         print(scheduler.globalQueue.time, ":", self, "taking off with", len(coachPassengers), "/", self.nCoach,"coach passengers and", len(businessPassengers),"/", self.nBusiness, "business passengers")
         profit = 1000*len(businessPassengers) + 500*len(coachPassengers) - 12000
         print("\tprofit:", profit)
+        ProvincialFlight.totalFlightProfit += profit
         ProvincialFlight()
-            
+
+def endSimStats():
+    print("Total provincial flight profit:", ProvincialFlight.totalFlightProfit)
+    print("Total provincial flight profit per flight:", round(float(ProvincialFlight.totalFlightProfit)/ProvincialFlight.flightCount, 2))
+    print("Total commuter flight profit:", CommuterFlight.totalFlightProfit)
+    print("Total commuter flight profit per flight:", round(float(CommuterFlight.totalFlightProfit)/CommuterFlight.flightCount, 2))
+    return ProvincialFlight.totalFlightProfit + CommuterFlight.totalFlightProfit
         
