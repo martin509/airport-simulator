@@ -160,7 +160,10 @@ class ProvincialPassenger(Passenger):
             Passenger.findQueue(self, queues, servers)
             
     def hasMissedFlight(self):
-        return (scheduler.globalQueue.time > self.flight.departureTime)
+        if(scheduler.globalQueue.time > self.flight.departureTime):
+            return 1
+        else:
+            return 0
         
     def missFlight(self):
         print(scheduler.globalQueue.time, ": ", self, "has missed their flight!")

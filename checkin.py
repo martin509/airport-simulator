@@ -17,8 +17,9 @@ def sendPassengerToTerminal(passenger):
         print(scheduler.globalQueue.time, ": sent passenger [", passenger, "] to terminal" )
     passenger.logStats()
     if passenger.passengerType == "PROVINCIAL":
-        if (not passenger.hasMissedFlight()):
+        if (passenger.hasMissedFlight()):
             passenger.missFlight()
+        else:
             provincialTerminal.append(passenger)
     else:
         commuterTerminal.append(passenger)
