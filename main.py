@@ -41,6 +41,16 @@ def main():
         passengerWriter.writerow(passengerData)
         # print(passengerData)
 
+    planeFile = open('planeLogs.csv', 'w')
+    planeWriter = csv.writer(planeFile, dialect='excel', lineterminator='\n')
+    planeWriter.writerow(["Plane Number", "Type", "Departure Time", "# available coach seats", "# available buasiness seats", "# filled coach seats", "# filled buasiness seats", "# expected coach seats", "# expected buasiness seats"])
+    
+    #print all plane data
+    for pl in plane.planeList:
+        planeData = pl.printFull()
+        planeWriter.writerow(planeData)
+        # print(planeData)
+
 """
 # gets the configurable options for the simulation from the user
 """
@@ -156,7 +166,7 @@ def setSimConfig(configList):
     
     checkin.setupCheckin([0,1,1], [0, 1, 1], [nUniversal,nCoach,nBusiness], [nUniSec,nCoachSec,nBusiSec])
 
-    settings.loqQueueInfo = bool(configList['logQueue'])
+    settings.logQueueInfo = bool(configList['logQueue'])
     settings.logPlaneInfo = bool(configList['logPlane'])
     settings.logPassengerInfo = bool(configList['logPassenger'])
     
