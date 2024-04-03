@@ -130,15 +130,21 @@ class ProvincialFlight(Flight):
         for queue in queueList:
             # print("queue length:", len(queue))
             passCount = 0
+            busiCount = 0
+            coachCount = 0
             for n in range(len(queue)):
                 passenger = queue.popleft()
                 if passenger.passengerType == "PROVINCIAL" and passenger.flight == self:
+                    if passenger.passengerClass == 1:
+                        coachCount += 1
+                    else:
+                        busiCount += 1
                     passCount += 1
                     passenger.logStats()
                     passenger.missFlight()
                 else:
                     queue.append(passenger)
-            # print("passengers removed from queue:", passCount)
+            # print("passengers that missed the flight just now:", passCount, "(business:", busiCount, ", coach:", coachCount)
             # print("queue length:", len(queue))
         
         coachPassengers = list()

@@ -3,13 +3,12 @@ import distributions
 import checkin
 import settings
 
+
 commuterGenerator = distributions.DistExponential(1.5)
-
-
 passengerList = list()
 
 class Passenger:
-    MAXPASSENGERCOUNT = -1
+    MAXCOMMUTERCOUNT = -1
     PASSENGERSGENERATED = 0
     BusinessCount = 0
     
@@ -133,11 +132,14 @@ class Passenger:
         return f'P#{self.passengerNumber} ({flightType}{passType})'
 
     def logStats(self):
-        Passenger.totalCheckinTime += (self.checkinLeaveTime - self.checkinEnterTime)
-        Passenger.totalSecurityTime += (self.securityLeaveTime - self.securityEnterTime)
-        if self.passengerClass == 2:
-            Passenger.totalBusinessCheckinTime += (self.checkinLeaveTime - self.checkinEnterTime)
-            Passenger.totalBusinessSecurityTime += (self.securityLeaveTime - self.securityEnterTime)
+        if(self.checkinLeaveTime > self.checkinEnterTime):
+            Passenger.totalCheckinTime += (self.checkinLeaveTime - self.checkinEnterTime)
+            if self.passengerClass == 2:
+                Passenger.totalBusinessCheckinTime += (self.checkinLeaveTime - self.checkinEnterTime)
+        if(self.securityLeaveTime > self.securityEnterTime):
+            Passenger.totalSecurityTime += (self.securityLeaveTime - self.securityEnterTime)
+            if self.passengerClass == 2:
+                Passenger.totalBusinessSecurityTime += (self.securityLeaveTime - self.securityEnterTime)
         
 class ProvincialPassenger(Passenger):
     coachRefundCount = 0
@@ -156,8 +158,12 @@ class ProvincialPassenger(Passenger):
             
     def findQueue(self, queues, servers):
         #catching provincial passengers that arrive after the flight's left
+        
         if not self.hasMissedFlight():
             Passenger.findQueue(self, queues, servers)
+        else:
+            self.logStats()
+            self.missFlight()
             
     def hasMissedFlight(self):
         if(scheduler.globalQueue.time > self.flight.departureTime):
@@ -166,16 +172,25 @@ class ProvincialPassenger(Passenger):
             return 0
         
     def missFlight(self):
-        print(scheduler.globalQueue.time, ": ", self, "has missed their flight!")
+        if self.hasMissedFlight():
+            print(scheduler.globalQueue.time, ": ", self, "has missed their flight!")
         if (self.expectedDepartureTime - (self.creationTime+self.arrivalTime)) >= 90:
-            print(scheduler.globalQueue.time, ": ", self, "qualifies for a ticket refund!")
+            # print(scheduler.globalQueue.time, ": ", self, "qualifies for a ticket refund!")
             if self.passengerClass == 1:
                 ProvincialPassenger.coachRefundCount += 1
             else:
                 ProvincialPassenger.businessRefundCount += 1
-        
-         
+                
+def setupPassengers(commuterRate):
+    global commuterGenerator
+    if commuterRate > 0:
+        commuterGenerator = distributions.DistExponential(60/commuterRate)
+    else: 
+        Passenger.MAXCOMMUTERCOUNT = 0
+    
 def generateCommuter():
+    if Passenger.MAXCOMMUTERCOUNT == 0:
+        return
     newPassenger = Passenger("COMMUTER", 1)
     passengerList.append(newPassenger);
     arrivalTime = commuterGenerator.genNumber()
@@ -184,7 +199,7 @@ def generateCommuter():
     if(settings.logPassengerInfo):
         print(scheduler.globalQueue.time, ": Commuter arrived:", newPassenger, "next arrival time:", arrivalTime)
     newPassenger.findQueue(checkin.checkinQueues, checkin.checkinServerList)
-    if(Passenger.PASSENGERSGENERATED < Passenger.MAXPASSENGERCOUNT or Passenger.MAXPASSENGERCOUNT == -1):
+    if(Passenger.PASSENGERSGENERATED < Passenger.MAXCOMMUTERCOUNT or Passenger.MAXCOMMUTERCOUNT == -1):
         scheduler.globalQueue.addEventFromFunc(arrivalTime, generateCommuter, 2, list())
         
 def generateProvincial(passengerClass, flight):
