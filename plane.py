@@ -118,6 +118,29 @@ class ProvincialFlight(Flight):
             scheduler.globalQueue.addEventFromFunc(arrivalTime, passenger.generateProvincial, 2, [self, 2])
             
     def takeOff(self):
+        # handle missed flights
+        
+        queueList = list()
+        
+        for queue in checkin.checkinQueues:
+            queueList.append(queue)
+        for queue in checkin.securityQueues:
+            queueList.append(queue)
+            
+        for queue in queueList:
+            # print("queue length:", len(queue))
+            passCount = 0
+            for n in range(len(queue)):
+                passenger = queue.popleft()
+                if passenger.passengerType == "PROVINCIAL" and passenger.flight == self:
+                    passCount += 1
+                    passenger.logStats()
+                    passenger.missFlight()
+                else:
+                    queue.append(passenger)
+            # print("passengers removed from queue:", passCount)
+            # print("queue length:", len(queue))
+        
         coachPassengers = list()
         businessPassengers = list()
 

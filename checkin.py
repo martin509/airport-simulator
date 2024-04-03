@@ -18,6 +18,7 @@ def sendPassengerToTerminal(passenger):
     passenger.logStats()
     if passenger.passengerType == "PROVINCIAL":
         if (not passenger.hasMissedFlight()):
+            passenger.missFlight()
             provincialTerminal.append(passenger)
     else:
         commuterTerminal.append(passenger)
