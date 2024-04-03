@@ -191,12 +191,14 @@ def generateProvincial(passengerClass, flight):
     newPassenger.findQueue(checkin.checkinQueues, checkin.checkinServerList)
     
 def endSimStats():
-    print("Average passenger check-in queue time:", Passenger.totalCheckinTime/Passenger.PASSENGERSGENERATED)
-    print("Average passenger security queue time:", Passenger.totalSecurityTime/Passenger.PASSENGERSGENERATED)
-    print("")
-    print("Average business class check-in queue time:", Passenger.totalBusinessCheckinTime/Passenger.BusinessCount)
-    print("Average business class security queue time:", Passenger.totalBusinessSecurityTime/Passenger.BusinessCount)
-    print("")
+    if Passenger.PASSENGERSGENERATED > 0:
+        print("Average passenger check-in queue time:", Passenger.totalCheckinTime/Passenger.PASSENGERSGENERATED)
+        print("Average passenger security queue time:", Passenger.totalSecurityTime/Passenger.PASSENGERSGENERATED)
+        print("")
+    if Passenger.BusinessCount > 0:
+        print("Average business class check-in queue time:", Passenger.totalBusinessCheckinTime/Passenger.BusinessCount)
+        print("Average business class security queue time:", Passenger.totalBusinessSecurityTime/Passenger.BusinessCount)
+        print("")
     print("Number of refunds:", ProvincialPassenger.coachRefundCount + ProvincialPassenger.businessRefundCount)
     totalRefund = ProvincialPassenger.coachRefundCount*500 + ProvincialPassenger.businessRefundCount*1000
     print("Total money refunded: $", totalRefund)
