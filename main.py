@@ -66,11 +66,13 @@ def getSimulationParametersFromUser():
         configList = configloader.loadConfigFile(filename)
             
     else:
+        configList = configloader.loadConfigFile('config.cfg')
         # get desired simulation runtime in days and convert into minutes
         print("Set maximum runtime in days (default 7 days):")
         configList['simLength'] = float(input().strip() or "7")
-        #scheduler.GlobalEventQueue.MAXTIME = float(input().strip() or "1") * 1440
-        configList['commuterCap'] = -1
+        
+        print("Set commuter arrival rate (default 40):")
+        configList['commuterRate'] = float(input().strip() or "40")
 
         # configures the check-in desk settings
         print("Use default checkin desk options? Y/N:")
@@ -79,8 +81,6 @@ def getSimulationParametersFromUser():
             configList['nUniCheckin'] = 0
             configList['nCoachCheckin'] = 3
             configList['nBusiCheckin'] = 1
-            
-            # checkin.setupCheckin([0,1,1], [0, 1, 1], [0,3,1], [0,2,1])
         else:
             print("Set number of universal checkin desks:")
             configList['nUniCheckin'] = int(input())
@@ -95,10 +95,6 @@ def getSimulationParametersFromUser():
             # print("set number of business security machines:") # TODO remove security customization
             # nBusiSec = int(input())
             # checkin.setupCheckin([0,1,1], [0, 1, 1], [nUniversal,nCoach,nBusiness], [0,2,1])
-        
-        configList['nUniSecurity'] = 0
-        configList['nCoachSecurity'] = 2 
-        configList['nBusiSecurity'] = 1
         
         print("Select universal server policy:")
         print("\t1: pick from queues randomly")
@@ -116,11 +112,6 @@ def getSimulationParametersFromUser():
             configList['logQueue'] = 1
             configList['logPlane'] = 1
             configList['logPassenger'] = 1
-            """
-            settings.logQueueInfo = 1
-            settings.logPlaneInfo = 1
-            settings.logPassengerInfo = 1
-            """
         else:
             configList['logQueue'] = 0
             configList['logPlane'] = 0
@@ -142,14 +133,6 @@ def getSimulationParametersFromUser():
 
         print(f'log configuration {settings.logQueueInfo} {settings.logPlaneInfo} {settings.logPassengerInfo}')
         
-        configList['commuterInterval'] = 60
-        configList['provincialInterval'] = 360
-        configList['provincialCoachCount'] = 140
-        configList['provincialCoachChance'] = 0.85 
-        configList['provincialBusinessCount'] = 40 
-        configList['provincialBusinessChance'] = 0.75 
-        configList['provincialArrivalMean'] = 75 
-        configList['provincialArrivalVariation'] = 50 
         
     setSimConfig(configList)
         #print("set maximum number of commuters:")
@@ -172,6 +155,8 @@ def setSimConfig(configList):
     print("nUniversal:", nUniversal)
     print("nCoach:", nCoach)
     print("nBusiness:", nBusiness)
+    
+    passenger.setupPassengers(configList['commuterRate'])
     
     plane.CommuterFlight.flightInterval = configList['commuterInterval']
     plane.CommuterFlight.seatCount = configList['commuterSeats']
