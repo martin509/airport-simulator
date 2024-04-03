@@ -67,6 +67,15 @@ def getSimulationParametersFromUser():
         # print("set number of business security machines:") # TODO remove security customization
         # nBusiSec = int(input())
         checkin.setupCheckin([0,1,1], [0, 1, 1], [nUniversal,nCoach,nBusiness], [0,2,1])
+        
+    print("Select universal server policy:")
+    print("\t1: pick from queues randomly")
+    print("\t2: alternate between queues")
+    print("\t3: prioritize business-class passengers")
+    print("\t4: prioritize coach-class passengers")
+    
+    universalPolicy = int(input().strip() or "1")
+    checkin.Server.universalPolicy = universalPolicy
 
     settings.init()
     print("Log all event actions?")
@@ -88,6 +97,7 @@ def getSimulationParametersFromUser():
         logthis = input()
         if logthis == "Y":
             settings.logPassengerInfo = True
+    
 
     print(f'log configuration {settings.logQueueInfo} {settings.logPlaneInfo} {settings.logPassengerInfo}')
         

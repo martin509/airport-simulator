@@ -40,6 +40,9 @@ class PassengerQueue(deque):
         
 class Server:
     serverCount = 0
+    universalPolicy = 1
+    # policy for universal-type servers
+    # policy values: 1 (pick randomly), 2 (pick alternating), 3 (prefer business class), 4 (prefer coach class)
     
     def __init__(self, passengerType):
         # acceptable passengerTypes: 0, 1, 2
@@ -58,6 +61,7 @@ class Server:
         self.serverNumber = Server.serverCount
         
         self.queues = checkinQueues
+        self.lastQueue = 0
         
     def __str__(self):
         if self.passengerType == 0:
@@ -86,8 +90,29 @@ class Server:
                 elif queue.queueType == 0:
                     usableQueues.append(queue)
         if len(usableQueues) > 0:
-            self.processPassenger(random.choice(usableQueues))
-            # self.processPassenger(usableQueues[0])
+            if Server.universalPolicy == 1:
+                self.processPassenger(random.choice(usableQueues))
+            elif Server.universalPolicy == 2: # alternate between the two
+                for queue in usableQueues:
+                    if not (queue == self.lastQueue):
+                        self.lastQueue = queue
+                        self.processPassenger(queue)
+                        return
+                self.lastQueue = usableQueues[0]
+                self.processPassenger(usableQueues[0])
+            elif Server.universalPolicy == 3: # prefer business
+                for queue in usableQueues:
+                    if queue.queueType == 2:
+                        self.processPassenger(queue)
+                        return
+                self.processPassenger(usableQueues[0])
+            elif Server.universalPolicy == 4: # prefer coach
+                for queue in usableQueues:
+                    if queue.queueType == 1:
+                        self.processPassenger(queue)
+                        return
+                self.processPassenger(usableQueues[0])
+                
         else:
             self.updateUtilization()
             self.isBusy = 0
