@@ -40,11 +40,12 @@ class CommuterFlight(Flight):
     flightInterval = 60
     totalFlightProfit = 0
     planeType = "Commuter"
+    seatCount = 40
     
     def __init__(self):
         Flight.__init__(self, CommuterFlight.flightInterval)
         
-        self.availableCoachSeats = 40
+        self.availableCoachSeats = CommuterFlight.seatCount
         
         CommuterFlight.flightCount += 1
         self.flightNumber = CommuterFlight.flightCount
@@ -61,7 +62,8 @@ class CommuterFlight(Flight):
             passenger.flightNum = self.flightNumber
             passengers.append(passenger)
             passenger.departureTime = self.departureTime
-        self.filledCoachSeats = len(passengers)
+            self.filledCoachSeats += 1
+        # self.filledCoachSeats = len(passengers)
         if(settings.logPlaneInfo):
             print(scheduler.globalQueue.time, ":", self, "taking off with", self.filledCoachSeats, "passengers")
         profit = 200 * self.filledCoachSeats - 1500
@@ -77,11 +79,22 @@ class ProvincialFlight(Flight):
     totalFlightProfit = 0
     planeType = "Provincial"
     
+    coachSeatCount = 140
+    coachChance = 0.85
+    
+    businessSeatCount = 40
+    businessChance = 0.75
+    
+    arrivalMean = 75
+    arrivalVariance = 50
+    
     def __init__(self):
         Flight.__init__(self, ProvincialFlight.flightInterval)
-        self.availableCoachSeats = 140
-        self.availableBusinessSeats = 40
+        # self.coachSeats = 140
+        # self.businessSeats = 40
         # self.flightDelay = 360
+        self.availableCoachSeats = ProvincialFlight.coachSeatCount
+        self.availableBusinessSeats = ProvincialFlight.businessSeatCount
         
         ProvincialFlight.flightCount += 1
         self.flightNumber = ProvincialFlight.flightCount
@@ -92,13 +105,12 @@ class ProvincialFlight(Flight):
         return f'Provincial flight #{self.flightNumber} scheduled for {self.departureTime}'
         
     def generatePassengers(self):
-        self.expectedCoachSeats = distributions.DistBinomial(self.availableCoachSeats, 0.85).genInt()
-        self.expectedBusinessSeats = distributions.DistBinomial(self.availableBusinessSeats, 0.75).genInt()
-        arrivalDist = distributions.DistNormal(75,50)
+        self.expectedCoachSeats = distributions.DistBinomial(self.availableCoachSeats, ProvincialFlight.coachChance).genInt()
+        self.expectedBusinessSeats = distributions.DistBinomial(self.availableBusinessSeats, ProvincialFlight.businessChance).genInt()
+        arrivalDist = distributions.DistNormal(ProvincialFlight.arrivalMean, ProvincialFlight.arrivalVariance)
         
-        # arrival times: assume that provincial flights are generated 6 hours ahead of time
         for n in range(self.expectedCoachSeats):
-            arrivalTime = self.flightDelay - arrivalDist.genNumber()
+            arrivalTime = ProvincialFlight.flightInterval - arrivalDist.genNumber()
             scheduler.globalQueue.addEventFromFunc(arrivalTime, passenger.generateProvincial, 2, [self, 1])
             # scheduler.globalQueue.addEventFromFunc(arrivalTime, generateCommuter, 2, list())
         for n in range(self.expectedBusinessSeats):
@@ -108,9 +120,7 @@ class ProvincialFlight(Flight):
     def takeOff(self):
         coachPassengers = list()
         businessPassengers = list()
-        
-        
-        
+
         for passenger in checkin.provincialTerminal:
             if passenger.passengerType == "PROVINCIAL" and passenger.flight == self:
                 if passenger.passengerClass == 1:

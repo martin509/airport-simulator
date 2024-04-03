@@ -1,5 +1,9 @@
 # settings.py
 
+logQueueInfo = False
+logPlaneInfo = False
+logPassengerInfo = False
+"""
 def init():
     global logQueueInfo
     global logPlaneInfo
@@ -8,3 +12,4 @@ def init():
     logQueueInfo = False
     logPlaneInfo = False
     logPassengerInfo = False
+"""

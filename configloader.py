@@ -40,13 +40,33 @@ def loadConfigFile(filename):
     configList['printQueue'] = int(logOptions.get('printQueue', '0'))
     configList['printPlane'] = int(logOptions.get('printPlane', '0'))
     configList['printPassenger'] = int(logOptions.get('printPassenger', '0'))
-    print(configList)
-    return configList
-    """
+    # print(configList)
+    
+    
     flightOptions = parser['flights']
-    commuterInterval = flightOptions.get('commuterInterval', '60')
-    provincialCoachChance = flightOptions.get('provincialCoachChance', '85')
+    
+    configList['commuterInterval'] = int(flightOptions.get('commuterInterval', '60'))
+    configList['commuterSeats'] = int(flightOptions.get('commuterSeats', '40'))
+    configList['provincialInterval'] = int(flightOptions.get('provincialInterval', '360'))
+    configList['provincialCoachCount'] = int(flightOptions.get('provincialCoachCount', '140'))
+    configList['provincialCoachChance'] = float(flightOptions.get('provincialCoachChance', '0.85'))
+    configList['provincialBusinessCount'] = int(flightOptions.get('provincialBusinessCount', '40'))
+    configList['provincialBusinessChance'] = float(flightOptions.get('provincialBusinessChance', '0.75'))
+    configList['provincialArrivalMean'] = int(flightOptions.get('provincialArrivalMean', '75'))
+    configList['provincialArrivalVariation'] = int(flightOptions.get('provincialArrivalVariation', '50'))
+    
+    return configList
+    
     """
+    'commuterInterval': '60',
+    'provincialInterval': '360',
+    'provincialCoachCount': '140',
+    'provincialCoachChance':, '0.85',
+    'provincialBusinessChance':, '0.75',
+    'provincialBusinessCount': '40',
+    'provincialArrivalMean':, '75',
+    'provincialArrivalVariation':, '50'"""
+    
     
 def writeDefaultConfig():
     defaultConfig = configparser.ConfigParser()
@@ -74,6 +94,18 @@ def writeDefaultConfig():
         'printQueue': '0',
         'printPlane': '0',
         'printPassenger': '0'
+    }
+    
+    defaultConfig['flights'] = {
+        'commuterInterval': '60',
+        'commuterSeats': '40',
+        'provincialInterval': '360',
+        'provincialCoachCount': '140',
+        'provincialCoachChance': '0.85',
+        'provincialBusinessChance': '0.75',
+        'provincialBusinessCount': '40',
+        'provincialArrivalMean': '75',
+        'provincialArrivalVariation': '50'
     }
     
     with open('config.cfg', 'w') as cfgfile:

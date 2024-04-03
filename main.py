@@ -142,6 +142,15 @@ def getSimulationParametersFromUser():
 
         print(f'log configuration {settings.logQueueInfo} {settings.logPlaneInfo} {settings.logPassengerInfo}')
         
+        configList['commuterInterval'] = 60
+        configList['provincialInterval'] = 360
+        configList['provincialCoachCount'] = 140
+        configList['provincialCoachChance'] = 0.85 
+        configList['provincialBusinessCount'] = 40 
+        configList['provincialBusinessChance'] = 0.75 
+        configList['provincialArrivalMean'] = 75 
+        configList['provincialArrivalVariation'] = 50 
+        
     setSimConfig(configList)
         #print("set maximum number of commuters:")
         # passenger.Passenger.MAXPASSENGERCOUNT = -1 #int(input()) TODO
@@ -163,6 +172,17 @@ def setSimConfig(configList):
     print("nUniversal:", nUniversal)
     print("nCoach:", nCoach)
     print("nBusiness:", nBusiness)
+    
+    plane.CommuterFlight.flightInterval = configList['commuterInterval']
+    plane.CommuterFlight.seatCount = configList['commuterSeats']
+    
+    plane.ProvincialFlight.flightInterval = configList['provincialInterval']
+    plane.ProvincialFlight.coachSeatCount = configList['provincialCoachCount'] 
+    plane.ProvincialFlight.coachChance = configList['provincialCoachChance']
+    plane.ProvincialFlight.businessSeatCount = configList['provincialBusinessCount']
+    plane.ProvincialFlight.businessChance = configList['provincialBusinessChance']
+    plane.ProvincialFlight.arrivalMean = configList['provincialArrivalMean']
+    plane.ProvincialFlight.arrivalVariance = configList['provincialArrivalVariation']
     
     checkin.setupCheckin([0,1,1], [0, 1, 1], [nUniversal,nCoach,nBusiness], [nUniSec,nCoachSec,nBusiSec])
 
