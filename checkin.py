@@ -169,6 +169,17 @@ class Server:
         #grab a passenger from a queue
         #post an event in the scheduler for when the passenger exits the queue
         
+
+
+
+# the following fields each time a customer enteres the queue:
+# - timestamp
+# - queue type (business/coach) or (provincial/commuter)
+# - waiting line
+# - customer being served
+# - time customer will be in queue
+# where they are named like securityQueue1Logs and checkinQueue3Logs
+
 class SecurityServer(Server):
     serverCount = 0
     def __init__(self, passengerType):

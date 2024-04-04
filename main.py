@@ -43,7 +43,7 @@ def main():
 
     planeFile = open('planeLogs.csv', 'w')
     planeWriter = csv.writer(planeFile, dialect='excel', lineterminator='\n')
-    planeWriter.writerow(["Plane Number", "Type", "Departure Time", "# available coach seats", "# available buasiness seats", "# filled coach seats", "# filled buasiness seats", "# expected coach seats", "# expected buasiness seats"])
+    planeWriter.writerow(["Plane Number", "Type", "Departure Time", "# available coach seats", "# available buasiness seats", "# filled coach seats", "# filled buasiness seats", "# expected coach seats", "# expected buasiness seats", "flight profit"])
     
     #print all plane data
     for pl in plane.planeList:

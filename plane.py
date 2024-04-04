@@ -33,6 +33,7 @@ class Flight:
         a7 = self.filledBusinessSeats           #count of filled buasiness seats
         a8 = self.expectedCoachSeats              #count of expected coach seats (provincial flights only)
         a9 = self.expectedBusinessSeats           #count of expected buasiness seats (provincial flights only)
+        a10 = self.totalFlightProfit           #profit of flight 
         return [a1, a2, a3, a4, a5, a6, a7, a8, a9]
         
 class CommuterFlight(Flight):
