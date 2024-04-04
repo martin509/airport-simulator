@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 
 import scheduler
+import csv
 
 writeToConsole = 1
 writeToFile = 1
@@ -34,8 +35,31 @@ def setupFiles():
     print("log folder:", logFolder)
     print("timestamp:", datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
     os.makedirs(logFolder, exist_ok=True)
-
     
+    
+    
+    
+    
+def setupAllCsv(checkinList, securityList):
+    setupCsv('passengers.csv', ["Passenger Number", "Type", "Class", "# of bags", "Flight #", "Arrival time", "Interarrival time", "Checkin queue time", "Checkin processing time", "Security queue time", "Security processing time", "Departure time", "Flight departure time"])
+    setupCsv('planes.csv', ["Plane Number", "Type", "Departure Time", "# available coach seats", "# available buasiness seats", "# filled coach seats", "# filled buasiness seats", "# expected coach seats", "# expected buasiness seats", "flight profit"])
+    
+    for server in checkinList:
+        setupCsv(f'checkindesk{server.serverNumber}.csv', [])
+    for server in securityList:
+        setupCsv(f'securitydesk{server.serverNumber}.csv', [])
+    
+def setupCsv(name, topRow):
+    csv1 = open(os.path.join(logFolder, name), 'w')
+    csv1writer = csv.writer(csv1, dialect='excel', lineterminator='\n')
+    csv1writer.writerow(topRow)
+
+def writeToCsv(file, row):
+    csvWriter = csv.writer(open(os.path.join(logFolder, file), 'a'), dialect='excel', lineterminator='\n')
+    csvWriter.writerow(row)
+        
+
+
 
 def writeLog(text, logType):
     # log types: 'queue', 'plane', 'passenger'

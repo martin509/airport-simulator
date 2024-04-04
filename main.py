@@ -36,37 +36,49 @@ def main():
     # run through simulation by handling events in the event queue
     scheduler.globalQueue.executeEventQueue()
     
-    passengerFile = open('passengerLogs.csv', 'w')
-    passengerWriter = csv.writer(passengerFile, dialect='excel', lineterminator='\n')
-    passengerWriter.writerow(["Passenger Number", "Type", "Class", "# of bags", "Flight #", "Arrival time", "Interarrival time", "Checkin queue time", "Checkin processing time", "Security queue time", "Security processing time", "Departure time", "Flight departure time"])
+    print("")
+    print("Writing logs, please wait...")
+    
+    logger.setupAllCsv(checkin.checkinServerList, checkin.securityServerList)
+    #passengerFile = open('passengerLogs.csv', 'w')
+    #passengerWriter = csv.writer(passengerFile, dialect='excel', lineterminator='\n')
+    #passengerWriter.writerow(["Passenger Number", "Type", "Class", "# of bags", "Flight #", "Arrival time", "Interarrival time", "Checkin queue time", "Checkin processing time", "Security queue time", "Security processing time", "Departure time", "Flight departure time"])
     
     #print all passenger data
     for p in passenger.passengerList:
         passengerData = p.printFull()
-        passengerWriter.writerow(passengerData)
+        logger.writeToCsv('passengers.csv', passengerData)
+        #passengerWriter.writerow(passengerData)
         # print(passengerData)
-
+    """
     planeFile = open('planeLogs.csv', 'w')
     planeWriter = csv.writer(planeFile, dialect='excel', lineterminator='\n')
     planeWriter.writerow(["Plane Number", "Type", "Departure Time", "# available coach seats", "# available buasiness seats", "# filled coach seats", "# filled buasiness seats", "# expected coach seats", "# expected buasiness seats", "flight profit"])
+    """
     
     #print all plane data
     for pl in plane.planeList:
         planeData = pl.printFull()
-        planeWriter.writerow(planeData)
+        logger.writeToCsv('planes.csv', planeData)
+        #planeWriter.writerow(planeData)
         # print(planeData)
     
     #print all server data
     for i in range(len(checkin.checkinServerList)):
-        serverFile = open(f'checkinServer{i}Logs.csv', 'w')
-        serverWriter = csv.writer(serverFile, dialect='excel', lineterminator='\n')
+        
+        #serverFile = open(f'checkinServer{i}Logs.csv', 'w')
+        #serverWriter = csv.writer(serverFile, dialect='excel', lineterminator='\n')
         for serverLog in checkin.checkinServerLogs[i]:
-            serverWriter.writerow(serverLog)
+            logger.writeToCsv(f'checkindesk{checkin.checkinServerList[i].serverNumber}.csv', serverLog)
+            #serverWriter.writerow(serverLog)
     for i in range(len(checkin.securityServerList)):
-        serverFile = open(f'securityServer{i}Logs.csv', 'w')
-        serverWriter = csv.writer(serverFile, dialect='excel', lineterminator='\n')
+        #serverFile = open(f'securityServer{i}Logs.csv', 'w')
+        #serverWriter = csv.writer(serverFile, dialect='excel', lineterminator='\n')
         for serverLog in checkin.securityServerLogs[i]:
-            serverWriter.writerow(serverLog)
+            logger.writeToCsv(f'securitydesk{checkin.checkinServerList[i].serverNumber}.csv', serverLog)
+            #serverWriter.writerow(serverLog)
+    print("")
+    print(f'Logs done! Check folder: logs/{logger.logFolder}!')
 
 """
 # gets the configurable options for the simulation from the user
