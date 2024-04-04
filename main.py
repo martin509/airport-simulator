@@ -6,6 +6,7 @@ import plane
 import csv
 import settings
 import configloader
+import logger
 
 DEBUG = 0
 
@@ -16,6 +17,8 @@ def genericEvent(event):
 
 
 def main():
+    logger.setupFiles()
+    
     print("Martin and Marcus' Airport Simulator v1.0")
     print("-----------------------------------------")
     # sets up simulation congiguration
@@ -170,10 +173,11 @@ def setSimConfig(configList):
     plane.ProvincialFlight.arrivalVariance = configList['provincialArrivalVariation']
     
     checkin.setupCheckin([0,1,1], [0, 1, 1], [nUniversal,nCoach,nBusiness], [nUniSec,nCoachSec,nBusiSec])
-
+    logger.addLogTypes([bool(configList['logQueue']), bool(configList['logPlane']), bool(configList['logPassenger'])])
+    """
     settings.logQueueInfo = bool(configList['logQueue'])
     settings.logPlaneInfo = bool(configList['logPlane'])
     settings.logPassengerInfo = bool(configList['logPassenger'])
-    
+    """
 if __name__=="__main__" :
     main()

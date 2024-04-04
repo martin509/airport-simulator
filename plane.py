@@ -3,6 +3,7 @@ import passenger
 import distributions
 import checkin
 import settings
+import logger
 
 planeList = list()
 
@@ -21,8 +22,9 @@ class Flight:
         self.profit = 0;
         
     def takeOff(self):
-        if(settings.logPlaneInfo):
-            print(scheduler.globalQueue.time, ": flight", self, "taking off")
+        logger.writeLog(f'flight {self}, taking off.', 'plane')
+        #if(settings.logPlaneInfo):
+         #   print(scheduler.globalQueue.time, ": flight", self, "taking off")
     
     def printFull(self):
         a1 = self.flightNumber                  #plane id
@@ -53,7 +55,7 @@ class CommuterFlight(Flight):
         self.flightNumber = CommuterFlight.flightCount
         
     def __str__(self):
-        return f'Commuter flight #{self.flightNumber} scheduled for {self.departureTime}'
+        return f'Commuter flight #{self.flightNumber}, scheduled for {self.departureTime}'
         
     def takeOff(self):
         passengers = list()
@@ -66,11 +68,13 @@ class CommuterFlight(Flight):
             passenger.departureTime = self.departureTime
             self.filledCoachSeats += 1
         # self.filledCoachSeats = len(passengers)
-        if(settings.logPlaneInfo):
-            print(scheduler.globalQueue.time, ":", self, "taking off with", self.filledCoachSeats, "passengers")
+        
+        #if(settings.logPlaneInfo):
+         #   print(scheduler.globalQueue.time, ":", self, "taking off with", self.filledCoachSeats, "passengers")
         self.profit = 200 * self.filledCoachSeats - 1500
-        if(settings.logPlaneInfo):
-            print("\tprofit:", self.profit)
+        logger.writeLog(f'{self}, taking off.\n\tPassengers: {self.filledCoachSeats}/{self.availableCoachSeats}\n\tProfit: ${self.profit}', 'plane')
+        #if(settings.logPlaneInfo):
+        #    print("\tprofit:", self.profit)
         CommuterFlight.totalFlightProfit += self.profit
         CommuterFlight()
         
@@ -174,10 +178,11 @@ class ProvincialFlight(Flight):
         """
         self.filledCoachSeats = len(coachPassengers)
         self.filledBusinessSeats = len(businessPassengers)
-
-        if(settings.logPlaneInfo):
-            print(scheduler.globalQueue.time, ":", self, "taking off with", self.filledCoachSeats, "/", self.expectedCoachSeats,"coach passengers and", self.filledBusinessSeats,"/", self.expectedBusinessSeats, "business passengers")
+        
+        #if(settings.logPlaneInfo):
+        #    print(scheduler.globalQueue.time, ":", self, "taking off with", self.filledCoachSeats, "/", self.expectedCoachSeats,"coach passengers and", self.filledBusinessSeats,"/", self.expectedBusinessSeats, "business passengers")
         self.profit = 1000*self.filledBusinessSeats + 500*self.filledCoachSeats - 12000
+        logger.writeLog(f'{self}, taking off.\n\tPassengers:{self.filledCoachSeats}/{self.expectedCoachSeats}/{self.availableCoachSeats} coach, {self.filledBusinessSeats}/{self.expectedBusinessSeats}/{self.availableBusinessSeats} business\n\tProfit: ${self.profit}', 'plane')
         if(settings.logPlaneInfo):
             print("\tprofit:", self.profit)
         ProvincialFlight.totalFlightProfit += self.profit

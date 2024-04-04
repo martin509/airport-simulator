@@ -3,6 +3,7 @@ import distributions
 import scheduler
 import random
 import settings
+import logger
 
 commuterTerminal = deque()
 provincialTerminal = deque()
@@ -13,8 +14,9 @@ securityServerList = 0
 
 
 def sendPassengerToTerminal(passenger):
-    if(settings.logPassengerInfo):
-        print(scheduler.globalQueue.time, ": sent passenger [", passenger, "] to terminal" )
+    #if(settings.logPassengerInfo):
+    logger.writeLog(f'Passenger entered terminal: {passenger}', 'passenger')
+        # print(scheduler.globalQueue.time, ": sent passenger [", passenger, "] to terminal" )
     passenger.logStats()
     if passenger.passengerType == "PROVINCIAL":
         if (passenger.hasMissedFlight()):
@@ -25,8 +27,8 @@ def sendPassengerToTerminal(passenger):
         commuterTerminal.append(passenger)
 
 def sendPassengerToSecurity(passenger):
-    if(settings.logPassengerInfo):
-        print(scheduler.globalQueue.time, ": sent passenger [", passenger, "] to security" )
+    #if(settings.logPassengerInfo):
+    logger.writeLog(f'Passenger entered security queue: {passenger}', 'passenger')
     passenger.securityEnterTime = scheduler.globalQueue.time
     passenger.findQueue(securityQueues, securityServerList)
 
@@ -118,8 +120,10 @@ class Server:
         else:
             self.updateUtilization()
             self.isBusy = 0
-            if(settings.logQueueInfo):
-                print(scheduler.globalQueue.time, ":", self, "is idle!")
+            logger.writeLog(f'{self} is now idle.', 'queue')
+            # if(settings.logQueueInfo):
+                
+                # print(scheduler.globalQueue.time, ":", self, "is idle!")
         
     def updateUtilization(self):
         totalTime = scheduler.globalQueue.time - self.lastUpdate
@@ -136,8 +140,9 @@ class Server:
         if self.isBusy == 0:
             self.updateUtilization()
             self.isBusy = 1
-            if(settings.logQueueInfo):
-                print(scheduler.globalQueue.time, ":", self, "is no longer idle.")
+            logger.writeLog(f'{self} is no longer idle.', 'queue')
+            #if(settings.logQueueInfo):
+             #   print(scheduler.globalQueue.time, ":", self, "is no longer idle.")
         passenger = queue.popleft()
 
         # if passenger has missed their flight send them home TODO double check if this works
@@ -151,13 +156,15 @@ class Server:
         """
         passenger.checkinLeaveTime = scheduler.globalQueue.time
         checkinTime = self.getPassengerProcessTime(passenger)
-        if(settings.logQueueInfo):
-            print(scheduler.globalQueue.time, ": checking in passenger: [", passenger, "] checkin time:", checkinTime)
+        logger.writeLog(f'checking in passenger: [{passenger}], process time:{checkinTime}', 'queue')
+        #if(settings.logQueueInfo):
+         #   print(scheduler.globalQueue.time, ": checking in passenger: [", passenger, "] checkin time:", checkinTime)
         passenger.checkinTime = checkinTime
         passenger.checkinStartTime = scheduler.globalQueue.time
         if passenger.passengerType == "PROVINCIAL":
             if checkinTime + scheduler.globalQueue.time > passenger.flight.departureTime:
-                print("Passenger missed flight mid-process:", passenger)
+                # print("Passenger missed flight mid-process:", passenger)
+                
                 scheduler.globalQueue.addEventFromFuncAbs(passenger.flight.departureTime, passenger.logStats, 1, [])
                 scheduler.globalQueue.addEventFromFuncAbs(passenger.flight.departureTime, passenger.missFlight, 1, [])
                 scheduler.globalQueue.addEventFromFuncAbs(passenger.flight.departureTime, self.selectPassenger, 1, [])
@@ -205,8 +212,9 @@ class SecurityServer(Server):
         if self.isBusy == 0:
             self.updateUtilization()
             self.isBusy = 1
-            if(settings.logQueueInfo):
-                print(scheduler.globalQueue.time, ":", self, "is no longer idle.")
+            logger.writeLog(f'{self} is no longer idle.', 'queue')
+            # if(settings.logQueueInfo):
+              #   print(scheduler.globalQueue.time, ":", self, "is no longer idle.")
         passenger = queue.popleft()
 
         # if passenger has missed their flight send them home TODO double check if this works
@@ -219,14 +227,15 @@ class SecurityServer(Server):
         """
         passenger.securityLeaveTime = scheduler.globalQueue.time
         checkinTime = self.getPassengerProcessTime(passenger)
-        if(settings.logQueueInfo):
-            print(scheduler.globalQueue.time, ": processing passenger: [", passenger, "] security check time:", checkinTime)
+        logger.writeLog(f'processing passenger for security checks: [{passenger}], security check time: {checkinTime}', 'queue')
+        #if(settings.logQueueInfo):
+         #   print(scheduler.globalQueue.time, ": processing passenger: [", passenger, "] security check time:", checkinTime)
         passenger.securityStartTime = scheduler.globalQueue.time
         passenger.securityTime = checkinTime
         
         if passenger.passengerType == "PROVINCIAL":
             if checkinTime + scheduler.globalQueue.time > passenger.flight.departureTime:
-                print("Passenger missed flight mid-process:", passenger)
+                #print("Passenger missed flight mid-process:", passenger)
                 scheduler.globalQueue.addEventFromFuncAbs(passenger.flight.departureTime, passenger.logStats, 1, [])
                 scheduler.globalQueue.addEventFromFuncAbs(passenger.flight.departureTime, passenger.missFlight, 1, [])
                 scheduler.globalQueue.addEventFromFuncAbs(passenger.flight.departureTime, self.selectPassenger, 1, [])

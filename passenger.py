@@ -2,6 +2,7 @@ import scheduler
 import distributions
 import checkin
 import settings
+import logger
 
 
 commuterGenerator = distributions.DistExponential(1.5)
@@ -77,12 +78,14 @@ class Passenger:
         elif queue2 != 0:
             self.enterQueue(queue2, servers)
             return
-        print("ERROR: CUSTOMER", self, "COULD NOT FIND QUEUE") #if we get here something bad has happened
+        logger.writeLog(f'ERROR: PASSENGER {self} COULD NOT FIND A QUEUE!', 'passenger')
+        #print("ERROR: CUSTOMER", self, "COULD NOT FIND QUEUE") #if we get here something bad has happened
     
     def enterQueue(self, queue, servers):
         queue.append(self)
-        if(settings.logPassengerInfo):
-            print(scheduler.globalQueue.time, ": passenger", self, "entered queue of length ", len(queue))
+        logger.writeLog(f'Passenger [{self.printMin()}] entered a queue of length {len(queue)}', 'passenger')
+        #if(settings.logPassengerInfo):
+        #    print(scheduler.globalQueue.time, ": passenger", self, "entered queue of length ", len(queue))
         for server in servers:
             if server.isBusy == 0 and (server.passengerType == self.passengerClass or server.passengerType == 0):
                 server.selectPassenger()
@@ -173,13 +176,17 @@ class ProvincialPassenger(Passenger):
         
     def missFlight(self):
         if self.hasMissedFlight():
-            print(scheduler.globalQueue.time, ": ", self, "has missed their flight!")
+            logger.writeLog(f'Passenger {self} has missed their flight!', 'passenger')
+            #print(scheduler.globalQueue.time, ": ", self, "has missed their flight!")
         if (self.departureTime - (self.creationTime)) >= 90:
-            print(scheduler.globalQueue.time, ": ", self, "qualifies for a ticket refund!")
+            
+            #print(scheduler.globalQueue.time, ": ", self, "qualifies for a ticket refund!")
             if self.passengerClass == 1:
                 ProvincialPassenger.coachRefundCount += 1
+                logger.writeLog(f'Passenger {self} qualifies for a refund (refund cost: $500)', 'passenger')
             else:
                 ProvincialPassenger.businessRefundCount += 1
+                logger.writeLog(f'Passenger {self} qualifies for a refund (refund cost: $1000)', 'passenger')
                 
 def setupPassengers(commuterRate):
     global commuterGenerator
@@ -196,8 +203,9 @@ def generateCommuter():
     arrivalTime = commuterGenerator.genNumber()
     newPassenger.creationTime = scheduler.globalQueue.time
     newPassenger.arrivalTime = arrivalTime
-    if(settings.logPassengerInfo):
-        print(scheduler.globalQueue.time, ": Commuter arrived:", newPassenger, "next arrival time:", arrivalTime)
+    logger.writeLog(f'Commuter passenger arrived at airport: {newPassenger}, next interarrival time: {arrivalTime}', 'passenger')
+    #if(settings.logPassengerInfo):
+    #    print(scheduler.globalQueue.time, ": Commuter arrived:", newPassenger, "next arrival time:", arrivalTime)
     newPassenger.findQueue(checkin.checkinQueues, checkin.checkinServerList)
     if(Passenger.PASSENGERSGENERATED < Passenger.MAXCOMMUTERCOUNT or Passenger.MAXCOMMUTERCOUNT == -1):
         scheduler.globalQueue.addEventFromFunc(arrivalTime, generateCommuter, 2, list())
@@ -205,8 +213,9 @@ def generateCommuter():
 def generateProvincial(flight, passengerClass):
     newPassenger = ProvincialPassenger(flight, passengerClass)
     passengerList.append(newPassenger);
-    if(settings.logPassengerInfo):
-        print(scheduler.globalQueue.time, ": PROVINCIAL arrived:", newPassenger)
+    logger.writeLog(f'Provincial passenger arrived at airport: {newPassenger}', 'passenger')
+    #if(settings.logPassengerInfo):
+    #    print(scheduler.globalQueue.time, ": PROVINCIAL arrived:", newPassenger)
     newPassenger.findQueue(checkin.checkinQueues, checkin.checkinServerList)
     
 def endSimStats():
