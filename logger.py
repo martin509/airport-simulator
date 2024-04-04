@@ -27,12 +27,12 @@ def addPrintTypes(types):
 
 def setupFiles():
     global logFolder
-    logFolder = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+    logFolder = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     logFolder = logFolder[1:]
     logFolder = 'logs/' + logFolder
     os.makedirs('logs', exist_ok=True)
     print("log folder:", logFolder)
-    print("timestamp:", datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
+    print("timestamp:", datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
     os.makedirs(logFolder, exist_ok=True)
 
     
