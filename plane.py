@@ -18,6 +18,7 @@ class Flight:
         self.filledBusinessSeats = 0
         self.expectedCoachSeats = -1
         self.expectedBusinessSeats = -1
+        self.profit = 0;
         
     def takeOff(self):
         if(settings.logPlaneInfo):
@@ -33,8 +34,8 @@ class Flight:
         a7 = self.filledBusinessSeats           #count of filled buasiness seats
         a8 = self.expectedCoachSeats              #count of expected coach seats (provincial flights only)
         a9 = self.expectedBusinessSeats           #count of expected buasiness seats (provincial flights only)
-        a10 = self.totalFlightProfit           #profit of flight 
-        return [a1, a2, a3, a4, a5, a6, a7, a8, a9]
+        a10 = self.profit           #profit of flight 
+        return [a1, a2, a3, a4, a5, a6, a7, a8, a9, a10]
         
 class CommuterFlight(Flight):
     flightCount = 0
@@ -67,10 +68,10 @@ class CommuterFlight(Flight):
         # self.filledCoachSeats = len(passengers)
         if(settings.logPlaneInfo):
             print(scheduler.globalQueue.time, ":", self, "taking off with", self.filledCoachSeats, "passengers")
-        profit = 200 * self.filledCoachSeats - 1500
+        self.profit = 200 * self.filledCoachSeats - 1500
         if(settings.logPlaneInfo):
-            print("\tprofit:", profit)
-        CommuterFlight.totalFlightProfit += profit
+            print("\tprofit:", self.profit)
+        CommuterFlight.totalFlightProfit += self.profit
         CommuterFlight()
         
         
@@ -176,10 +177,10 @@ class ProvincialFlight(Flight):
 
         if(settings.logPlaneInfo):
             print(scheduler.globalQueue.time, ":", self, "taking off with", self.filledCoachSeats, "/", self.expectedCoachSeats,"coach passengers and", self.filledBusinessSeats,"/", self.expectedBusinessSeats, "business passengers")
-        profit = 1000*self.filledBusinessSeats + 500*self.filledCoachSeats - 12000
+        self.profit = 1000*self.filledBusinessSeats + 500*self.filledCoachSeats - 12000
         if(settings.logPlaneInfo):
-            print("\tprofit:", profit)
-        ProvincialFlight.totalFlightProfit += profit
+            print("\tprofit:", self.profit)
+        ProvincialFlight.totalFlightProfit += self.profit
         ProvincialFlight()
 
 def endSimStats():
