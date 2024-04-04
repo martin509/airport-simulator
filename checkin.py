@@ -3,14 +3,10 @@ import distributions
 import scheduler
 import random
 import settings
+import copy
 
 commuterTerminal = deque()
 provincialTerminal = deque()
-checkinQueues = 0
-securityQueues = 0
-checkinServerList = 0
-securityServerList = 0
-
 
 def sendPassengerToTerminal(passenger):
     if(settings.logPassengerInfo):
@@ -155,6 +151,19 @@ class Server:
             print(scheduler.globalQueue.time, ": checking in passenger: [", passenger, "] checkin time:", checkinTime)
         passenger.checkinTime = checkinTime
         passenger.checkinStartTime = scheduler.globalQueue.time
+
+        # creates log for this server operation
+        # timestamp,Type, # in coach waiting lines, # in business waiting lines, customer being served, time customer spends in checkin
+        checkinServerLogs[checkinServerList.index(self)].append([
+                scheduler.globalQueue.time,
+                ("BUSINESS", "COACH") [passenger.passengerClass == 1],
+                # passenger.passengerType,
+                len(checkinQueues[0]),
+                len(checkinQueues[1]),
+                passenger.passengerNumber,
+                passenger.checkinTime,
+            ])
+
         if passenger.passengerType == "PROVINCIAL":
             if checkinTime + scheduler.globalQueue.time > passenger.flight.departureTime:
                 print("Passenger missed flight mid-process:", passenger)
@@ -171,14 +180,6 @@ class Server:
         
 
 
-
-# the following fields each time a customer enteres the queue:
-# - timestamp
-# - queue type (business/coach) or (provincial/commuter)
-# - waiting line
-# - customer being served
-# - time customer will be in queue
-# where they are named like securityQueue1Logs and checkinQueue3Logs
 
 class SecurityServer(Server):
     serverCount = 0
@@ -223,7 +224,19 @@ class SecurityServer(Server):
             print(scheduler.globalQueue.time, ": processing passenger: [", passenger, "] security check time:", checkinTime)
         passenger.securityStartTime = scheduler.globalQueue.time
         passenger.securityTime = checkinTime
-        
+
+        # creates log for this server operation
+        # timestamp,Type, # in coach waiting lines, # in business waiting lines, customer being served, time customer spends in checkin
+        securityServerLogs[securityServerList.index(self)].append([
+                scheduler.globalQueue.time,
+                ("BUSINESS", "COACH") [passenger.passengerClass == 1],
+                # passenger.passengerType,
+                len(securityQueues[0]),
+                len(securityQueues[1]),
+                passenger.passengerNumber,
+                passenger.checkinTime,
+            ])
+
         if passenger.passengerType == "PROVINCIAL":
             if checkinTime + scheduler.globalQueue.time > passenger.flight.departureTime:
                 print("Passenger missed flight mid-process:", passenger)
@@ -285,8 +298,6 @@ def createSecurityMachines(nUniversal, nCoach, nBusiness):
 # creates and configures the check-in and security queues
 """
 def setupCheckin(hasQueues, secQueues, nCheckin, nSecurity):
-    
-
     global securityQueues
     securityQueues = createQueues(secQueues[0], secQueues[1], secQueues[2])
     global checkinQueues
@@ -295,6 +306,20 @@ def setupCheckin(hasQueues, secQueues, nCheckin, nSecurity):
     checkinServerList = createCheckinServers(nCheckin[0], nCheckin[1], nCheckin[2])
     global securityServerList
     securityServerList = createSecurityMachines(nSecurity[0], nSecurity[1], nSecurity[2])
+
+    # this setup works for storing server log information because python lists are guarenteed to stay in same order
+    global checkinServerLogs
+    checkinServerLogs = list()
+    global securityServerLogs
+    securityServerLogs = list()
+    checkinLogHeaderList = [["timestamp", "Type", "# in coach waiting lines", "# in business waiting lines", "customer being served", "time customer spends in checkin"]]
+    securityLogHeaderList = [["timestamp", "Type", "# in coach waiting lines", "# in business waiting lines", "customer being served", "time customer spends in security"]]
+    for server in checkinServerList:
+        checkinLogHeaderListCopy = copy.deepcopy(checkinLogHeaderList)
+        checkinServerLogs.append(checkinLogHeaderListCopy)
+    for server in securityServerList:
+        securityLogHeaderListCopy = copy.deepcopy(securityLogHeaderList)
+        securityServerLogs.append(securityLogHeaderListCopy)
     
 def endSimStats():
     global checkinServerList
