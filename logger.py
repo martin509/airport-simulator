@@ -7,6 +7,7 @@ writeToConsole = 1
 writeToFile = 1
 logFolder = ""
 logTypes = list()
+printTypes = list()
 
 def addLogTypes(types):
     if types[0]:
@@ -15,6 +16,14 @@ def addLogTypes(types):
         logTypes.append('plane')
     if types[2]:
         logTypes.append('passenger')
+        
+def addPrintTypes(types):
+    if types[0]:
+        printTypes.append('queue')
+    if types[1]:
+        printTypes.append('plane')
+    if types[2]:
+        printTypes.append('passenger')
 
 def setupFiles():
     global logFolder
@@ -29,12 +38,10 @@ def setupFiles():
     
 
 def writeLog(text, logType):
-    # log types: 
-    if not (logType in logTypes):
-        return
-    if writeToFile == 1:
+    # log types: 'queue', 'plane', 'passenger'
+    if logType in logTypes:
         global logFolder
         with open(os.path.join(logFolder, 'log.txt'), 'a') as file:
             file.write(f'{scheduler.globalQueue.time} : {text}\n')
-    if writeToConsole == 1:
+    if logType in printTypes:
         print(scheduler.globalQueue.time, ":", text)

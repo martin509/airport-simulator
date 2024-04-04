@@ -23,6 +23,8 @@ def main():
     print("-----------------------------------------")
     # sets up simulation congiguration
     getSimulationParametersFromUser()
+    print("")
+    print("Running simulation, please wait...")
 
     # generate provincial flight passengers and departure events for the duration of the simulation
     plane.ProvincialFlight()
@@ -167,9 +169,9 @@ def setSimConfig(configList):
     nCoachSec = configList['nCoachSecurity']
     nBusiSec = configList['nBusiSecurity']
     
-    print("nUniversal:", nUniversal)
-    print("nCoach:", nCoach)
-    print("nBusiness:", nBusiness)
+    #print("nUniversal:", nUniversal)
+    #print("nCoach:", nCoach)
+    #print("nBusiness:", nBusiness)
     
     passenger.setupPassengers(configList['commuterRate'])
     
@@ -186,6 +188,7 @@ def setSimConfig(configList):
     
     checkin.setupCheckin([0,1,1], [0, 1, 1], [nUniversal,nCoach,nBusiness], [nUniSec,nCoachSec,nBusiSec])
     logger.addLogTypes([bool(configList['logQueue']), bool(configList['logPlane']), bool(configList['logPassenger'])])
+    logger.addPrintTypes([bool(configList['printQueue']), bool(configList['printPlane']), bool(configList['printPassenger'])])
     """
     settings.logQueueInfo = bool(configList['logQueue'])
     settings.logPlaneInfo = bool(configList['logPlane'])

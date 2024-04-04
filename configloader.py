@@ -40,6 +40,7 @@ def loadConfigFile(filename):
     configList['printQueue'] = int(logOptions.get('printQueue', '0'))
     configList['printPlane'] = int(logOptions.get('printPlane', '0'))
     configList['printPassenger'] = int(logOptions.get('printPassenger', '0'))
+    
     # print(configList)
     
     
