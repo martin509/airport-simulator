@@ -149,8 +149,19 @@ class ProvincialFlight(Flight):
         
         coachPassengers = list()
         businessPassengers = list()
-
+        # print("length of provincial terminal:", len(checkin.provincialTerminal))
+        for n in range(len(checkin.provincialTerminal)):
+            passenger = checkin.provincialTerminal.popleft()
+            if passenger.flight == self:
+                if passenger.passengerClass == 1:
+                    coachPassengers.append(passenger)
+                else:
+                    businessPassengers.append(passenger)
+            else:
+                checkin.provincialTerminal.append(passenger)
+        """
         for passenger in checkin.provincialTerminal:
+            print(passenger)
             if passenger.passengerType == "PROVINCIAL" and passenger.flight == self:
                 if passenger.passengerClass == 1:
                     coachPassengers.append(passenger)
@@ -158,7 +169,7 @@ class ProvincialFlight(Flight):
                 else:
                     businessPassengers.append(passenger)
                     checkin.provincialTerminal.remove(passenger)
-
+        """
         self.filledCoachSeats = len(coachPassengers)
         self.filledBusinessSeats = len(businessPassengers)
 

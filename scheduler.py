@@ -101,6 +101,13 @@ class GlobalEventQueue:
         newEvent.addArgs(args)
         self.addEvent(newEvent)
         
+    def addEventFromFuncAbs(self, time, func, priority, args):
+        #same as above, but with absolute time
+        newTime = time
+        newEvent = GlobalEvent(newTime, func, priority)
+        newEvent.addArgs(args)
+        self.addEvent(newEvent)
+        
     def executeEventQueue(self):
         eventlist = self.popNextEvents()
         while (len(eventlist) > 0 and self.time <= GlobalEventQueue.MAXTIME):

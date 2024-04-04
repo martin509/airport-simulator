@@ -5,7 +5,7 @@ import random
 import settings
 
 commuterTerminal = deque()
-provincialTerminal = list()
+provincialTerminal = deque()
 checkinQueues = 0
 securityQueues = 0
 checkinServerList = 0
@@ -141,19 +141,27 @@ class Server:
         passenger = queue.popleft()
 
         # if passenger has missed their flight send them home TODO double check if this works
+        """
         if(passenger.passengerType == "PROVINCIAL" and passenger.hasMissedFlight()):
             if(settings.logPassengerInfo):
                 print(scheduler.globalQueue.time, "MISSED FLIGHT : passenger: [", passenger, "] missed flight in checkin line")
-            scheduler.globalQueue.addEventFromFunc(0, self.selectPassenger, 1, [])
+            self.selectPassenger()
+            #scheduler.globalQueue.addEventFromFunc(0, self.selectPassenger, 1, [])
             return
-
+        """
         passenger.checkinLeaveTime = scheduler.globalQueue.time
         checkinTime = self.getPassengerProcessTime(passenger)
         if(settings.logQueueInfo):
             print(scheduler.globalQueue.time, ": checking in passenger: [", passenger, "] checkin time:", checkinTime)
         passenger.checkinTime = checkinTime
         passenger.checkinStartTime = scheduler.globalQueue.time
-
+        if passenger.passengerType == "PROVINCIAL":
+            if checkinTime + scheduler.globalQueue.time > passenger.flight.departureTime:
+                print("Passenger missed flight mid-process:", passenger)
+                scheduler.globalQueue.addEventFromFuncAbs(passenger.flight.departureTime, passenger.logStats, 1, [])
+                scheduler.globalQueue.addEventFromFuncAbs(passenger.flight.departureTime, passenger.missFlight, 1, [])
+                scheduler.globalQueue.addEventFromFuncAbs(passenger.flight.departureTime, self.selectPassenger, 1, [])
+                return
         scheduler.globalQueue.addEventFromFunc(checkinTime, sendPassengerToSecurity, 1, [passenger])
         scheduler.globalQueue.addEventFromFunc(checkinTime, self.selectPassenger, 1, [])
         return
@@ -191,18 +199,27 @@ class SecurityServer(Server):
         passenger = queue.popleft()
 
         # if passenger has missed their flight send them home TODO double check if this works
+        """
         if(passenger.passengerType == "PROVINCIAL" and passenger.hasMissedFlight()):
             if(settings.logPassengerInfo):
                 print(scheduler.globalQueue.time, "MISSED FLIGHT : passenger: [", passenger, "] missed flight in security line")
             scheduler.globalQueue.addEventFromFunc(0, self.selectPassenger, 1, [])
             return
-
+        """
         passenger.securityLeaveTime = scheduler.globalQueue.time
         checkinTime = self.getPassengerProcessTime(passenger)
         if(settings.logQueueInfo):
             print(scheduler.globalQueue.time, ": processing passenger: [", passenger, "] security check time:", checkinTime)
         passenger.securityStartTime = scheduler.globalQueue.time
         passenger.securityTime = checkinTime
+        
+        if passenger.passengerType == "PROVINCIAL":
+            if checkinTime + scheduler.globalQueue.time > passenger.flight.departureTime:
+                print("Passenger missed flight mid-process:", passenger)
+                scheduler.globalQueue.addEventFromFuncAbs(passenger.flight.departureTime, passenger.logStats, 1, [])
+                scheduler.globalQueue.addEventFromFuncAbs(passenger.flight.departureTime, passenger.missFlight, 1, [])
+                scheduler.globalQueue.addEventFromFuncAbs(passenger.flight.departureTime, self.selectPassenger, 1, [])
+                return
             
         scheduler.globalQueue.addEventFromFunc(checkinTime, sendPassengerToTerminal, 1, [passenger])
         scheduler.globalQueue.addEventFromFunc(checkinTime, self.selectPassenger, 1, [])

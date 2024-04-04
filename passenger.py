@@ -174,8 +174,8 @@ class ProvincialPassenger(Passenger):
     def missFlight(self):
         if self.hasMissedFlight():
             print(scheduler.globalQueue.time, ": ", self, "has missed their flight!")
-        if (self.expectedDepartureTime - (self.creationTime+self.arrivalTime)) >= 90:
-            # print(scheduler.globalQueue.time, ": ", self, "qualifies for a ticket refund!")
+        if (self.departureTime - (self.creationTime)) >= 90:
+            print(scheduler.globalQueue.time, ": ", self, "qualifies for a ticket refund!")
             if self.passengerClass == 1:
                 ProvincialPassenger.coachRefundCount += 1
             else:
@@ -202,8 +202,8 @@ def generateCommuter():
     if(Passenger.PASSENGERSGENERATED < Passenger.MAXCOMMUTERCOUNT or Passenger.MAXCOMMUTERCOUNT == -1):
         scheduler.globalQueue.addEventFromFunc(arrivalTime, generateCommuter, 2, list())
         
-def generateProvincial(passengerClass, flight):
-    newPassenger = ProvincialPassenger(passengerClass, flight)
+def generateProvincial(flight, passengerClass):
+    newPassenger = ProvincialPassenger(flight, passengerClass)
     passengerList.append(newPassenger);
     if(settings.logPassengerInfo):
         print(scheduler.globalQueue.time, ": PROVINCIAL arrived:", newPassenger)
