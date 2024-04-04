@@ -2,6 +2,7 @@ from collections import deque
 import plane
 import checkin
 import passenger
+import main
 
 DEBUG = 0
 
@@ -117,17 +118,8 @@ class GlobalEventQueue:
                 event.func(*event.args)
             #print(len(globalQueue.queue))
             eventlist = self.popNextEvents()
-        print("")
-        refunds = passenger.endSimStats()
-        print("")
-        flights = plane.endSimStats()
-        print("")
-        agentPay = checkin.endSimStats()
-        print("")
-        profit = flights - agentPay - refunds
-        print("Total profit:", profit)
-        print("Average profit per day:", profit/(self.time/1440))
-        print("Agent pay percentage of revenue:", agentPay/flights)
+        
+        
         
             
 globalQueue = GlobalEventQueue()

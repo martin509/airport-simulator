@@ -17,7 +17,8 @@ def addLogTypes(types):
         logTypes.append('plane')
     if types[2]:
         logTypes.append('passenger')
-        
+    logTypes.append('endstats')
+    
 def addPrintTypes(types):
     if types[0]:
         printTypes.append('queue')
@@ -25,11 +26,12 @@ def addPrintTypes(types):
         printTypes.append('plane')
     if types[2]:
         printTypes.append('passenger')
+    printTypes.append('endstats')
 
 def setupFiles():
     global logFolder
     logFolder = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-    logFolder = logFolder[1:]
+    #logFolder = logFolder[1:]
     logFolder = 'logs/' + logFolder
     os.makedirs('logs', exist_ok=True)
     print("log folder:", logFolder)
@@ -59,13 +61,17 @@ def writeToCsv(file, row):
     csvWriter.writerow(row)
         
 
-
-
 def writeLog(text, logType):
     # log types: 'queue', 'plane', 'passenger'
     if logType in logTypes:
         global logFolder
         with open(os.path.join(logFolder, 'log.txt'), 'a') as file:
-            file.write(f'{scheduler.globalQueue.time} : {text}\n')
+            if text == "" or logType == 'endstats':
+                file.write(f'{text}\n')
+            else:
+                file.write(f'{scheduler.globalQueue.time} : {text}\n')
     if logType in printTypes:
-        print(scheduler.globalQueue.time, ":", text)
+        if text == "" or logType == 'endstats':
+            print(text)
+        else:
+            print(scheduler.globalQueue.time, ":", text)

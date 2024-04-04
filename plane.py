@@ -189,11 +189,11 @@ class ProvincialFlight(Flight):
         ProvincialFlight()
 
 def endSimStats():
-    print("Total provincial flight profit:", ProvincialFlight.totalFlightProfit)
+    logger.writeLog(f'Total provincial flight profit: ${ProvincialFlight.totalFlightProfit}', 'endstats')
     if(ProvincialFlight.flightCount > 0): #prevents devide by 0 error
-        print("Total provincial flight profit per flight:", round(float(ProvincialFlight.totalFlightProfit)/ProvincialFlight.flightCount, 2))
-    print("Total commuter flight profit:", CommuterFlight.totalFlightProfit)
+        logger.writeLog(f'Average provincial flight profit per flight: ${round(float(ProvincialFlight.totalFlightProfit)/ProvincialFlight.flightCount, 2)}', 'endstats')
+    logger.writeLog(f'Total commuter flight profit: ${CommuterFlight.totalFlightProfit}', 'endstats')
     if(CommuterFlight.flightCount > 0): #prevents devide by 0 error
-        print("Total commuter flight profit per flight:", round(float(CommuterFlight.totalFlightProfit)/CommuterFlight.flightCount, 2))
+        logger.writeLog(f'Average commuter flight profit per flight: ${round(float(CommuterFlight.totalFlightProfit)/CommuterFlight.flightCount, 2)}', 'endstats')
     return ProvincialFlight.totalFlightProfit + CommuterFlight.totalFlightProfit
         

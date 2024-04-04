@@ -220,14 +220,14 @@ def generateProvincial(flight, passengerClass):
     
 def endSimStats():
     if Passenger.PASSENGERSGENERATED > 0:
-        print("Average passenger check-in queue time:", Passenger.totalCheckinTime/Passenger.PASSENGERSGENERATED)
-        print("Average passenger security queue time:", Passenger.totalSecurityTime/Passenger.PASSENGERSGENERATED)
-        print("")
+        logger.writeLog(f'Average passenger check-in queue time: {Passenger.totalCheckinTime/Passenger.PASSENGERSGENERATED}', 'endstats')
+        logger.writeLog(f'Average passenger security queue time: {Passenger.totalSecurityTime/Passenger.PASSENGERSGENERATED}', 'endstats')
+        logger.writeLog("", 'endstats')
     if Passenger.BusinessCount > 0:
-        print("Average business class check-in queue time:", Passenger.totalBusinessCheckinTime/Passenger.BusinessCount)
-        print("Average business class security queue time:", Passenger.totalBusinessSecurityTime/Passenger.BusinessCount)
-        print("")
-    print("Number of refunds:", ProvincialPassenger.coachRefundCount + ProvincialPassenger.businessRefundCount)
+       logger.writeLog(f'Average business class check-in queue time: {Passenger.totalBusinessCheckinTime/Passenger.BusinessCount}', 'endstats')
+       logger.writeLog(f'Average business class security queue time: {Passenger.totalBusinessSecurityTime/Passenger.BusinessCount}', 'endstats')
+       logger.writeLog("", 'endstats')
+    logger.writeLog(f'Number of refunds: {ProvincialPassenger.coachRefundCount} from coach passengers, {ProvincialPassenger.businessRefundCount} from business passengers, {ProvincialPassenger.coachRefundCount + ProvincialPassenger.businessRefundCount} total', 'endstats')
     totalRefund = ProvincialPassenger.coachRefundCount*500 + ProvincialPassenger.businessRefundCount*1000
-    print("Total money refunded: $", totalRefund)
+    logger.writeLog(f'Total money refunded: ${totalRefund}', 'endstats')
     return totalRefund

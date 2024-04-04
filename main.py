@@ -36,6 +36,18 @@ def main():
     # run through simulation by handling events in the event queue
     scheduler.globalQueue.executeEventQueue()
     
+    logger.writeLog("", 'endstats')
+    refunds = passenger.endSimStats()
+    logger.writeLog("", 'endstats')
+    flights = plane.endSimStats()
+    logger.writeLog("", 'endstats')
+    agentPay = checkin.endSimStats()
+    logger.writeLog("", 'endstats')
+    profit = flights - agentPay - refunds
+    logger.writeLog(f'Total profit: ${profit}', 'endstats')
+    logger.writeLog(f'Average profit per day: ${profit/(scheduler.globalQueue.time/1440)}', 'endstats')
+    logger.writeLog(f'Agent pay percentage of revenue: {agentPay/flights}%%', 'endstats')
+    
     print("")
     print("Writing logs, please wait...")
     
@@ -81,8 +93,8 @@ def getSimulationParametersFromUser():
         print("Set maximum runtime in days (default 7 days):")
         configList['simLength'] = float(input().strip() or "7")
         
-        print("Set commuter arrival rate (default 40):")
-        configList['commuterRate'] = float(input().strip() or "40")
+        #print("Set commuter arrival rate (default 40):")
+        #configList['commuterRate'] = float(input().strip() or "40")
 
         # configures the check-in desk settings
         print("Use default checkin desk options? Y/N:")
@@ -98,8 +110,8 @@ def getSimulationParametersFromUser():
             configList['nCoachCheckin'] = int(input())
             print("Set number of business checkin desks:")
             configList['nBusiCheckin'] = int(input())
-            # print("set number of universal security machines:")
-            # nUniSec = int(input())
+            #print("Set number of universal security machines:")
+            #configList[' = int(input())
             # print("set number of coach security machines:")
             # nCoachSec = int(input())
             # print("set number of business security machines:") # TODO remove security customization

@@ -65,11 +65,11 @@ class Server:
         
     def __str__(self):
         if self.passengerType == 0:
-            return f'universal server #{self.serverNumber}'
+            return f'Universal check-in counter #{self.serverNumber}'
         elif self.passengerType == 1:
-            return f'coach server #{self.serverNumber}'
+            return f'Coach check-in counter #{self.serverNumber}'
         else:
-            return f'business server #{self.serverNumber}'
+            return f'Business check-in counter #{self.serverNumber}'
         
     def getPassengerProcessTime(self, passenger):
         time = self.checkinDist1.genNumber()
@@ -203,11 +203,11 @@ class SecurityServer(Server):
         
     def __str__(self):
         if self.passengerType == 0:
-            return f'universal security machine #{self.serverNumber}'
+            return f'Universal security machine #{self.serverNumber}'
         elif self.passengerType == 1:
-            return f'coach security machine #{self.serverNumber}'
+            return f'Coach security machine #{self.serverNumber}'
         else:
-            return f'business security machine #{self.serverNumber}'
+            return f'Business security machine #{self.serverNumber}'
             
     def processPassenger(self, queue):
         if self.isBusy == 0:
@@ -335,13 +335,13 @@ def endSimStats():
     global securityServerList
     for server in checkinServerList:
         server.updateUtilization()
-        print(server, "total utilization:", round(server.getUtilization()*100,2), "%")
+        logger.writeLog(f'{server} average utilization: {round(server.getUtilization()*100,2)}%%', 'endstats')
     for server in securityServerList:
         server.updateUtilization()
-        print(server, "total utilization:", round(server.getUtilization()*100,2), "%")
+        logger.writeLog(f'{server} average utilization: {round(server.getUtilization()*100,2)}%%', 'endstats')
     serverPay = len(checkinServerList) * 35 * (float(scheduler.globalQueue.time)/60)
     serverPay = round(serverPay, 2)
-    print("Total amount paid to checkin agents: $", serverPay)
+    logger.writeLog(f'Total amount paid to checkin agents: ${serverPay}', 'endstats')
     return serverPay
     
     
