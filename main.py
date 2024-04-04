@@ -160,7 +160,7 @@ def getSimulationParametersFromUser():
                 configList['logPassenger'] = 1
     
 
-        print(f'log configuration {settings.logQueueInfo} {settings.logPlaneInfo} {settings.logPassengerInfo}')
+        # print(f'log configuration {settings.logQueueInfo} {settings.logPlaneInfo} {settings.logPassengerInfo}')
         
         
     setSimConfig(configList)
