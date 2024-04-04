@@ -53,6 +53,18 @@ def main():
         planeData = pl.printFull()
         planeWriter.writerow(planeData)
         # print(planeData)
+    
+    #print all server data
+    for i in range(len(checkin.checkinServerList)):
+        serverFile = open(f'checkinServer{i}Logs.csv', 'w')
+        serverWriter = csv.writer(serverFile, dialect='excel', lineterminator='\n')
+        for serverLog in checkin.checkinServerLogs[i]:
+            serverWriter.writerow(serverLog)
+    for i in range(len(checkin.securityServerList)):
+        serverFile = open(f'securityServer{i}Logs.csv', 'w')
+        serverWriter = csv.writer(serverFile, dialect='excel', lineterminator='\n')
+        for serverLog in checkin.securityServerLogs[i]:
+            serverWriter.writerow(serverLog)
 
 """
 # gets the configurable options for the simulation from the user
