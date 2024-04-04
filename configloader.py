@@ -27,7 +27,7 @@ def loadConfigFile(filename):
     
     simOptions = parser['simulation']
     
-    configList['simLength'] = int(simOptions.get('simLength', '7'))
+    configList['simLength'] = float(simOptions.get('simLength', '7'))
     configList['commuterCap'] = int(simOptions.get('commuterCap', '-1'))
     configList['commuterRate'] = int(simOptions.get('commuterRate', '40'))
     
