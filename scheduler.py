@@ -44,6 +44,7 @@ class GlobalEventQueue:
     def __init__(self):
         self.queue = deque()
         self.time = 0
+        self.currentday = 0
         
     def popNextEvents(self):
         #if the queue has >0 events in it
@@ -55,6 +56,13 @@ class GlobalEventQueue:
             if DEBUG:
                 print(str(eventlist[0]))
             self.time = eventlist[0].eventTime
+
+            #log the current day of simulation if the day progressed
+            self.currenttime = self.currentday*24*60
+            if(self.time > self.currenttime):
+                self.currentday += 1
+                print("Simulating day " + str(self.currentday))
+
             is_sametime = 1
             while is_sametime and len(self.queue) > 0: 
                 next_event = self.queue.popleft()
