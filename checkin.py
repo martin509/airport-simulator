@@ -85,7 +85,10 @@ class Server:
                     usableQueues.append(queue)
                 elif queue.queueType == 0:
                     usableQueues.append(queue)
-        if len(usableQueues) > 0:
+        if len(usableQueues) == 1:
+            self.processPassenger(usableQueues[0])
+            return
+        elif len(usableQueues) > 1:
             if Server.universalPolicy == 1: # policy: randomly choose, weighted by queue length
                 busiQueueLength = 0
                 coachQueueLength = 0
@@ -137,7 +140,8 @@ class Server:
                         self.processPassenger(queue)
                         return
                 self.processPassenger(usableQueues[0])
-                
+                return
+ 
         else:
             self.updateUtilization()
             self.isBusy = 0
