@@ -92,9 +92,6 @@ def getSimulationParametersFromUser():
         # get desired simulation runtime in days and convert into minutes
         print("Set maximum runtime in days (default 7 days):")
         configList['simLength'] = float(input().strip() or "7")
-        
-        #print("Set commuter arrival rate (default 40):")
-        #configList['commuterRate'] = float(input().strip() or "40")
 
         # configures the check-in desk settings
         print("Use default checkin desk options? Y/N:")
@@ -110,13 +107,6 @@ def getSimulationParametersFromUser():
             configList['nCoachCheckin'] = int(input())
             print("Set number of business checkin desks:")
             configList['nBusiCheckin'] = int(input())
-            #print("Set number of universal security machines:")
-            #configList[' = int(input())
-            # print("set number of coach security machines:")
-            # nCoachSec = int(input())
-            # print("set number of business security machines:") # TODO remove security customization
-            # nBusiSec = int(input())
-            # checkin.setupCheckin([0,1,1], [0, 1, 1], [nUniversal,nCoach,nBusiness], [0,2,1])
         
         print("Select universal server policy:")
         print("\t1: pick from queues randomly")
@@ -174,10 +164,6 @@ def setSimConfig(configList):
     nCoachSec = configList['nCoachSecurity']
     nBusiSec = configList['nBusiSecurity']
     
-    #print("nUniversal:", nUniversal)
-    #print("nCoach:", nCoach)
-    #print("nBusiness:", nBusiness)
-    
     passenger.setupPassengers(configList['commuterRate'])
     
     plane.CommuterFlight.flightInterval = configList['commuterInterval']
@@ -194,10 +180,6 @@ def setSimConfig(configList):
     checkin.setupCheckin([0,1,1], [0, 1, 1], [nUniversal,nCoach,nBusiness], [nUniSec,nCoachSec,nBusiSec])
     logger.addLogTypes([bool(configList['logQueue']), bool(configList['logPlane']), bool(configList['logPassenger'])])
     logger.addPrintTypes([bool(configList['printQueue']), bool(configList['printPlane']), bool(configList['printPassenger'])])
-    """
-    settings.logQueueInfo = bool(configList['logQueue'])
-    settings.logPlaneInfo = bool(configList['logPlane'])
-    settings.logPassengerInfo = bool(configList['logPassenger'])
-    """
+
 if __name__=="__main__" :
     main()

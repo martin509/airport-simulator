@@ -112,11 +112,9 @@ class GlobalEventQueue:
     def executeEventQueue(self):
         eventlist = self.popNextEvents()
         while (len(eventlist) > 0 and self.time <= GlobalEventQueue.MAXTIME):
-            #print(len(eventlist))
             eventlist.sort()
             for event in eventlist:
                 event.func(*event.args)
-            #print(len(globalQueue.queue))
             eventlist = self.popNextEvents()
         
         

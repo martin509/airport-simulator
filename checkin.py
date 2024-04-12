@@ -141,20 +141,10 @@ class Server:
              #   print(scheduler.globalQueue.time, ":", self, "is no longer idle.")
         passenger = queue.popleft()
 
-        # if passenger has missed their flight send them home TODO double check if this works
-        """
-        if(passenger.passengerType == "PROVINCIAL" and passenger.hasMissedFlight()):
-            if(settings.logPassengerInfo):
-                print(scheduler.globalQueue.time, "MISSED FLIGHT : passenger: [", passenger, "] missed flight in checkin line")
-            self.selectPassenger()
-            #scheduler.globalQueue.addEventFromFunc(0, self.selectPassenger, 1, [])
-            return
-        """
         passenger.checkinLeaveTime = scheduler.globalQueue.time
         checkinTime = self.getPassengerProcessTime(passenger)
         logger.writeLog(f'checking in passenger: [{passenger}], process time:{checkinTime}', 'queue')
-        #if(settings.logQueueInfo):
-         #   print(scheduler.globalQueue.time, ": checking in passenger: [", passenger, "] checkin time:", checkinTime)
+
         passenger.checkinTime = checkinTime
         passenger.checkinStartTime = scheduler.globalQueue.time
 
@@ -169,11 +159,11 @@ class Server:
                 passenger.passengerNumber,
                 passenger.checkinTime,
             ])
-
-        if passenger.passengerType == "PROVINCIAL":
+            
+        # if the passenger is going to miss their flight, 
+        if passenger.passengerType == "PROVINCIAL": 
             if checkinTime + scheduler.globalQueue.time > passenger.flight.departureTime:
-                # print("Passenger missed flight mid-process:", passenger)
-                
+                # post an event for departure time for the passenger leaving the checkin desk and missing their flight
                 scheduler.globalQueue.addEventFromFuncAbs(passenger.flight.departureTime, passenger.logStats, 1, [])
                 scheduler.globalQueue.addEventFromFuncAbs(passenger.flight.departureTime, passenger.missFlight, 1, [])
                 scheduler.globalQueue.addEventFromFuncAbs(passenger.flight.departureTime, self.selectPassenger, 1, [])
@@ -185,8 +175,6 @@ class Server:
         #grab a passenger from a queue
         #post an event in the scheduler for when the passenger exits the queue
         
-
-
 
 class SecurityServer(Server):
     serverCount = 0
@@ -214,23 +202,11 @@ class SecurityServer(Server):
             self.updateUtilization()
             self.isBusy = 1
             logger.writeLog(f'{self} is no longer idle.', 'queue')
-            # if(settings.logQueueInfo):
-              #   print(scheduler.globalQueue.time, ":", self, "is no longer idle.")
         passenger = queue.popleft()
 
-        # if passenger has missed their flight send them home TODO double check if this works
-        """
-        if(passenger.passengerType == "PROVINCIAL" and passenger.hasMissedFlight()):
-            if(settings.logPassengerInfo):
-                print(scheduler.globalQueue.time, "MISSED FLIGHT : passenger: [", passenger, "] missed flight in security line")
-            scheduler.globalQueue.addEventFromFunc(0, self.selectPassenger, 1, [])
-            return
-        """
         passenger.securityLeaveTime = scheduler.globalQueue.time
         checkinTime = self.getPassengerProcessTime(passenger)
         logger.writeLog(f'processing passenger for security checks: [{passenger}], security check time: {checkinTime}', 'queue')
-        #if(settings.logQueueInfo):
-         #   print(scheduler.globalQueue.time, ": processing passenger: [", passenger, "] security check time:", checkinTime)
         passenger.securityStartTime = scheduler.globalQueue.time
         passenger.securityTime = checkinTime
 
@@ -248,7 +224,7 @@ class SecurityServer(Server):
 
         if passenger.passengerType == "PROVINCIAL":
             if checkinTime + scheduler.globalQueue.time > passenger.flight.departureTime:
-                #print("Passenger missed flight mid-process:", passenger)
+
                 scheduler.globalQueue.addEventFromFuncAbs(passenger.flight.departureTime, passenger.logStats, 1, [])
                 scheduler.globalQueue.addEventFromFuncAbs(passenger.flight.departureTime, passenger.missFlight, 1, [])
                 scheduler.globalQueue.addEventFromFuncAbs(passenger.flight.departureTime, self.selectPassenger, 1, [])

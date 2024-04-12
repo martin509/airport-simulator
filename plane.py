@@ -96,9 +96,6 @@ class ProvincialFlight(Flight):
     
     def __init__(self):
         Flight.__init__(self, ProvincialFlight.flightInterval)
-        # self.coachSeats = 140
-        # self.businessSeats = 40
-        # self.flightDelay = 360
         self.availableCoachSeats = ProvincialFlight.coachSeatCount
         self.availableBusinessSeats = ProvincialFlight.businessSeatCount
         
@@ -111,6 +108,8 @@ class ProvincialFlight(Flight):
         return f'Provincial flight #{self.flightNumber} scheduled for {self.departureTime}'
         
     def generatePassengers(self):
+        # generate all the passenger arrival events
+        
         self.expectedCoachSeats = distributions.DistBinomial(self.availableCoachSeats, ProvincialFlight.coachChance).genInt()
         self.expectedBusinessSeats = distributions.DistBinomial(self.availableBusinessSeats, ProvincialFlight.businessChance).genInt()
         arrivalDist = distributions.DistNormal(ProvincialFlight.arrivalMean, ProvincialFlight.arrivalVariance)
@@ -118,44 +117,35 @@ class ProvincialFlight(Flight):
         for n in range(self.expectedCoachSeats):
             arrivalTime = ProvincialFlight.flightInterval - arrivalDist.genNumber()
             scheduler.globalQueue.addEventFromFunc(arrivalTime, passenger.generateProvincial, 2, [self, 1])
-            # scheduler.globalQueue.addEventFromFunc(arrivalTime, generateCommuter, 2, list())
+
         for n in range(self.expectedBusinessSeats):
             arrivalTime = self.flightDelay - arrivalDist.genNumber()
             scheduler.globalQueue.addEventFromFunc(arrivalTime, passenger.generateProvincial, 2, [self, 2])
             
     def takeOff(self):
-        # handle missed flights
-        
+        # first: handle missed flights
         queueList = list()
         
-        for queue in checkin.checkinQueues:
+        for queue in checkin.checkinQueues: # build list of all checkin and security queues
             queueList.append(queue)
         for queue in checkin.securityQueues:
             queueList.append(queue)
-            
-        for queue in queueList:
-            # print("queue length:", len(queue))
-            passCount = 0
-            busiCount = 0
-            coachCount = 0
+        # if any passengers are actively being processed, the agent has its own code to handle it
+        for queue in queueList: #iterate through every queue and look for passengers that belong to this flight
             for n in range(len(queue)):
-                passenger = queue.popleft()
+                passenger = queue.popleft() 
                 if passenger.passengerType == "PROVINCIAL" and passenger.flight == self:
-                    if passenger.passengerClass == 1:
-                        coachCount += 1
-                    else:
-                        busiCount += 1
-                    passCount += 1
-                    passenger.logStats()
+                    # if the passenger belongs to us, make them miss their flight
+                    passenger.logStats() 
                     passenger.missFlight()
-                else:
-                    queue.append(passenger)
-            # print("passengers that missed the flight just now:", passCount, "(business:", busiCount, ", coach:", coachCount)
-            # print("queue length:", len(queue))
+                else: #if the passenger does not belong to us, put them back in the queue
+                    queue.append(passenger) #since we iterate through the entire queue in order, the order of passengers in the queue is preserved, minus those who missed their flight
+        
+        # next: load up passengers from the terminal and calculate profit, etc
         
         coachPassengers = list()
         businessPassengers = list()
-        # print("length of provincial terminal:", len(checkin.provincialTerminal))
+
         for n in range(len(checkin.provincialTerminal)):
             passenger = checkin.provincialTerminal.popleft()
             if passenger.flight == self:
@@ -165,28 +155,17 @@ class ProvincialFlight(Flight):
                     businessPassengers.append(passenger)
             else:
                 checkin.provincialTerminal.append(passenger)
-        """
-        for passenger in checkin.provincialTerminal:
-            print(passenger)
-            if passenger.passengerType == "PROVINCIAL" and passenger.flight == self:
-                if passenger.passengerClass == 1:
-                    coachPassengers.append(passenger)
-                    checkin.provincialTerminal.remove(passenger)
-                else:
-                    businessPassengers.append(passenger)
-                    checkin.provincialTerminal.remove(passenger)
-        """
+
         self.filledCoachSeats = len(coachPassengers)
         self.filledBusinessSeats = len(businessPassengers)
         
-        #if(settings.logPlaneInfo):
-        #    print(scheduler.globalQueue.time, ":", self, "taking off with", self.filledCoachSeats, "/", self.expectedCoachSeats,"coach passengers and", self.filledBusinessSeats,"/", self.expectedBusinessSeats, "business passengers")
         self.profit = 1000*self.filledBusinessSeats + 500*self.filledCoachSeats - 12000
+        
         logger.writeLog(f'{self}, taking off.\n\tPassengers:{self.filledCoachSeats}/{self.expectedCoachSeats}/{self.availableCoachSeats} coach, {self.filledBusinessSeats}/{self.expectedBusinessSeats}/{self.availableBusinessSeats} business\n\tProfit: ${self.profit}', 'plane')
-        # if(settings.logPlaneInfo):
-          #  print("\tprofit:", self.profit)
+
         ProvincialFlight.totalFlightProfit += self.profit
-        ProvincialFlight()
+        
+        ProvincialFlight() #execute the next flight being generated
 
 def endSimStats():
     logger.writeLog(f'Total provincial flight profit: ${ProvincialFlight.totalFlightProfit}', 'endstats')

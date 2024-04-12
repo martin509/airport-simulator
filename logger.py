@@ -31,15 +31,11 @@ def addPrintTypes(types):
 def setupFiles():
     global logFolder
     logFolder = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-    #logFolder = logFolder[1:]
     logFolder = 'logs/' + logFolder
     os.makedirs('logs', exist_ok=True)
     print("log folder:", logFolder)
     print("timestamp:", datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
     os.makedirs(logFolder, exist_ok=True)
-    
-    
-    
     
     
 def setupAllCsv(checkinList, securityList):
@@ -62,7 +58,7 @@ def writeToCsv(file, row):
         
 
 def writeLog(text, logType):
-    # log types: 'queue', 'plane', 'passenger'
+    # log types: 'queue', 'plane', 'passenger', 'endstats'
     if logType in logTypes:
         global logFolder
         with open(os.path.join(logFolder, 'log.txt'), 'a') as file:
