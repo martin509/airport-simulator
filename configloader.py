@@ -58,16 +58,6 @@ def loadConfigFile(filename):
     
     return configList
     
-    """
-    'commuterInterval': '60',
-    'provincialInterval': '360',
-    'provincialCoachCount': '140',
-    'provincialCoachChance':, '0.85',
-    'provincialBusinessChance':, '0.75',
-    'provincialBusinessCount': '40',
-    'provincialArrivalMean':, '75',
-    'provincialArrivalVariation':, '50'"""
-    
     
 def writeDefaultConfig():
     defaultConfig = configparser.ConfigParser()
