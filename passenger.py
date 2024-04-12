@@ -1,7 +1,6 @@
 import scheduler
 import distributions
 import checkin
-import settings
 import logger
 
 

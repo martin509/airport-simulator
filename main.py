@@ -4,7 +4,6 @@ import checkin
 import passenger
 import plane
 import csv
-import settings
 import configloader
 import logger
 
@@ -109,10 +108,10 @@ def getSimulationParametersFromUser():
             configList['nBusiCheckin'] = int(input())
         
         print("Select universal server policy:")
-        print("\t1: pick from queues randomly")
-        print("\t2: alternate between queues")
-        print("\t3: prioritize business-class passengers")
-        print("\t4: prioritize coach-class passengers")
+        print("\t1: Pick from queues randomly, weighted by queue length (pick from longer queues more often)")
+        print("\t2: Alternate between queues 50/50")
+        print("\t3: Prioritize business-class passengers always")
+        print("\t4: Prioritize coach-class passengers always")
         
         configList['universalQueuePolicy'] = int(input().strip() or "1")
         # checkin.Server.universalPolicy = universalPolicy

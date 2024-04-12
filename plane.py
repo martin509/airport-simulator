@@ -2,17 +2,16 @@ import scheduler
 import passenger
 import distributions
 import checkin
-import settings
 import logger
 
 planeList = list()
 
 class Flight:
     def __init__(self, delay):
+        planeList.append(self)
+        
         self.flightDelay = delay
         self.departureTime = scheduler.globalQueue.time + delay
-        scheduler.globalQueue.addEventFromFunc(delay, self.takeOff, 2, list())
-        planeList.append(self)
         self.availableCoachSeats = 0
         self.availableBusinessSeats = 0
         self.filledCoachSeats = 0
@@ -21,10 +20,10 @@ class Flight:
         self.expectedBusinessSeats = -1
         self.profit = 0;
         
+        scheduler.globalQueue.addEventFromFunc(delay, self.takeOff, 2, list())
+        
     def takeOff(self):
         logger.writeLog(f'flight {self}, taking off.', 'plane')
-        #if(settings.logPlaneInfo):
-         #   print(scheduler.globalQueue.time, ": flight", self, "taking off")
     
     def printFull(self):
         a1 = self.flightNumber                  #plane id
@@ -59,22 +58,16 @@ class CommuterFlight(Flight):
         
     def takeOff(self):
         passengers = list()
-        # if(settings.logPlaneInfo):
-        #     print("commuter terminal length:",  len(checkin.commuterTerminal))
         while self.filledCoachSeats < self.availableCoachSeats and len(checkin.commuterTerminal) > 0:
             passenger = checkin.commuterTerminal.popleft()
             passenger.flightNum = self.flightNumber
             passengers.append(passenger)
             passenger.departureTime = self.departureTime
             self.filledCoachSeats += 1
-        # self.filledCoachSeats = len(passengers)
-        
-        #if(settings.logPlaneInfo):
-         #   print(scheduler.globalQueue.time, ":", self, "taking off with", self.filledCoachSeats, "passengers")
+
         self.profit = 200 * self.filledCoachSeats - 1500
         logger.writeLog(f'{self}, taking off.\n\tPassengers: {self.filledCoachSeats}/{self.availableCoachSeats}\n\tProfit: ${self.profit}', 'plane')
-        #if(settings.logPlaneInfo):
-        #    print("\tprofit:", self.profit)
+
         CommuterFlight.totalFlightProfit += self.profit
         CommuterFlight()
         
@@ -112,6 +105,7 @@ class ProvincialFlight(Flight):
         
         self.expectedCoachSeats = distributions.DistBinomial(self.availableCoachSeats, ProvincialFlight.coachChance).genInt()
         self.expectedBusinessSeats = distributions.DistBinomial(self.availableBusinessSeats, ProvincialFlight.businessChance).genInt()
+        
         arrivalDist = distributions.DistNormal(ProvincialFlight.arrivalMean, ProvincialFlight.arrivalVariance)
         
         for n in range(self.expectedCoachSeats):
@@ -139,13 +133,12 @@ class ProvincialFlight(Flight):
                     passenger.logStats() 
                     passenger.missFlight()
                 else: #if the passenger does not belong to us, put them back in the queue
-                    queue.append(passenger) #since we iterate through the entire queue in order, the order of passengers in the queue is preserved, minus those who missed their flight
+                    queue.append(passenger) 
+                    #since we iterate through the entire queue in order, the order of passengers in the queue is preserved, minus those who missed their flight
         
-        # next: load up passengers from the terminal and calculate profit, etc
-        
+        # next: load up passengers from the terminal and calculate profit, write logs, etc
         coachPassengers = list()
         businessPassengers = list()
-
         for n in range(len(checkin.provincialTerminal)):
             passenger = checkin.provincialTerminal.popleft()
             if passenger.flight == self:
@@ -165,7 +158,7 @@ class ProvincialFlight(Flight):
 
         ProvincialFlight.totalFlightProfit += self.profit
         
-        ProvincialFlight() #execute the next flight being generated
+        ProvincialFlight() #generate the next flight
 
 def endSimStats():
     logger.writeLog(f'Total provincial flight profit: ${ProvincialFlight.totalFlightProfit}', 'endstats')
