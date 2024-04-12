@@ -183,8 +183,8 @@ class ProvincialFlight(Flight):
         #    print(scheduler.globalQueue.time, ":", self, "taking off with", self.filledCoachSeats, "/", self.expectedCoachSeats,"coach passengers and", self.filledBusinessSeats,"/", self.expectedBusinessSeats, "business passengers")
         self.profit = 1000*self.filledBusinessSeats + 500*self.filledCoachSeats - 12000
         logger.writeLog(f'{self}, taking off.\n\tPassengers:{self.filledCoachSeats}/{self.expectedCoachSeats}/{self.availableCoachSeats} coach, {self.filledBusinessSeats}/{self.expectedBusinessSeats}/{self.availableBusinessSeats} business\n\tProfit: ${self.profit}', 'plane')
-        if(settings.logPlaneInfo):
-            print("\tprofit:", self.profit)
+        # if(settings.logPlaneInfo):
+          #  print("\tprofit:", self.profit)
         ProvincialFlight.totalFlightProfit += self.profit
         ProvincialFlight()
 
