@@ -28,7 +28,7 @@ class DistExponential(Distribution):
         Distribution.__init__(self)
         self.lambdaVal = 1.0/float(average)
     def genNumber(self):
-        return math.log( 1 - genU())/(self.lambdaVal*-1)
+        return math.log(1 - genU())/(self.lambdaVal * -1)
         
 class DistBernoulli(Distribution):
     #geometric distribution, not bernoulli
@@ -71,19 +71,19 @@ class DistBinomial(Distribution):
         return n
         
 class DistNormal(Distribution):
-    #has to rely on python's normal distribution function since you can't do a variate neatly
     def __init__(self, mean, variance):
         Distribution.__init__(self)
         self.mean = mean
         self.stdev = math.sqrt(float(variance))
         
     def genNumber(self):
+        # implementation of the Box-Muller transform method described in the textbook
         u1 = genU()
-        if u1 == 0:
-            u1 = genU()
+        if u1 == 0: #in case we get 0, which would cause a domain error on math.log, regenerate until that doesn't happen
+            while u1 == 0:
+                u1 = genU()
         u2 = genU()
-        # print(f'u1: {u1}')
         z = math.sqrt((-2 * math.log(u1))) * math.cos(2 * math.pi * u2)
-        return (self.mean + (z * self.stdev))
-    #def genNumber(self):
-     #   return random.normalvariate(self.mean, self.stdev)
+        # standard normal random variate w/ mean of 0 and variance of 1
+        z = self.mean + (z * self.stdev) # correct for mean and variance
+        return z
