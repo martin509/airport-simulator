@@ -2,7 +2,6 @@ from collections import deque
 import distributions
 import scheduler
 import random
-import settings
 import copy
 import logger
 
@@ -10,9 +9,7 @@ commuterTerminal = deque()
 provincialTerminal = deque()
 
 def sendPassengerToTerminal(passenger):
-    #if(settings.logPassengerInfo):
     logger.writeLog(f'Passenger entered terminal: {passenger}', 'passenger')
-        # print(scheduler.globalQueue.time, ": sent passenger [", passenger, "] to terminal" )
     passenger.logStats()
     if passenger.passengerType == "PROVINCIAL":
         if (passenger.hasMissedFlight()):
@@ -23,7 +20,6 @@ def sendPassengerToTerminal(passenger):
         commuterTerminal.append(passenger)
 
 def sendPassengerToSecurity(passenger):
-    #if(settings.logPassengerInfo):
     logger.writeLog(f'Passenger entered security queue: {passenger}', 'passenger')
     passenger.securityEnterTime = scheduler.globalQueue.time
     passenger.findQueue(securityQueues, securityServerList)
@@ -90,8 +86,37 @@ class Server:
                 elif queue.queueType == 0:
                     usableQueues.append(queue)
         if len(usableQueues) > 0:
-            if Server.universalPolicy == 1:
-                self.processPassenger(random.choice(usableQueues))
+            if Server.universalPolicy == 1: # policy: randomly choose, weighted by queue length
+                busiQueueLength = 0
+                coachQueueLength = 0
+                uniQueueLength = 0
+                for queue in usableQueues:
+                    if queue.queueType == 2:
+                        busiQueueLength = len(queue)
+                        
+                    if queue.queueType == 1:
+                        coachQueueLength = len(queue)
+                    else:
+                        uniQueueLength = len(queue)
+                totalQueueLength = float(busiQueueLength + coachQueueLength + uniQueueLength)
+                busiQueueLength = float(busiQueueLength)
+                coachQueueLength = float(busiQueueLength + coachQueueLength)
+                randChoice = distributions.DistUniform(0, totalQueueLength).genNumber()
+                if(randChoice <= busiQueueLength):
+                    for queue in usableQueues:
+                        if queue.queueType == 2:
+                            self.processPassenger(queue)
+                            return
+                elif (randChoice <= coachQueueLength):
+                    for queue in usableQueues:
+                        if queue.queueType == 1:
+                            self.processPassenger(queue)
+                            return
+                else:
+                    for queue in usableQueues:
+                        if queue.queueType == 0:
+                            self.processPassenger(queue)
+                            return
             elif Server.universalPolicy == 2: # alternate between the two
                 for queue in usableQueues:
                     if not (queue == self.lastQueue):
@@ -117,10 +142,7 @@ class Server:
             self.updateUtilization()
             self.isBusy = 0
             logger.writeLog(f'{self} is now idle.', 'queue')
-            # if(settings.logQueueInfo):
-                
-                # print(scheduler.globalQueue.time, ":", self, "is idle!")
-        
+
     def updateUtilization(self):
         totalTime = scheduler.globalQueue.time - self.lastUpdate
         if self.isBusy == 0:
@@ -137,8 +159,7 @@ class Server:
             self.updateUtilization()
             self.isBusy = 1
             logger.writeLog(f'{self} is no longer idle.', 'queue')
-            #if(settings.logQueueInfo):
-             #   print(scheduler.globalQueue.time, ":", self, "is no longer idle.")
+            
         passenger = queue.popleft()
 
         passenger.checkinLeaveTime = scheduler.globalQueue.time
@@ -168,6 +189,7 @@ class Server:
                 scheduler.globalQueue.addEventFromFuncAbs(passenger.flight.departureTime, passenger.missFlight, 1, [])
                 scheduler.globalQueue.addEventFromFuncAbs(passenger.flight.departureTime, self.selectPassenger, 1, [])
                 return
+                
         scheduler.globalQueue.addEventFromFunc(checkinTime, sendPassengerToSecurity, 1, [passenger])
         scheduler.globalQueue.addEventFromFunc(checkinTime, self.selectPassenger, 1, [])
         return
