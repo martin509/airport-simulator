@@ -59,7 +59,7 @@ class GlobalEventQueue:
 
             #log the current day of simulation if the day progressed
             self.currenttime = self.currentday*24*60
-            if(self.time > self.currenttime):
+            if(self.time > self.currenttime and self.time < self.MAXTIME):
                 self.currentday += 1
                 print("Simulating day " + str(self.currentday))
 
